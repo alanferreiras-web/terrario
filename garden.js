@@ -18,6 +18,10 @@
     return value>>>0;
   }
 
+  function mixedHash(value){
+    return (value^(value>>>16))>>>0;
+  }
+
   function slug(name){
     return name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
   }
@@ -44,7 +48,8 @@
 
     projects.forEach(project=>{
       const projectHash=hash(project.name);
-      const type=species[projectHash%species.length];
+      const identityHash=mixedHash(projectHash);
+      const type=species[identityHash%species.length];
       const stage=stageOf(project.name);
       const button=document.createElement('button');
       button.type='button';
