@@ -24,8 +24,10 @@ O código e o estado interno do Voltinha pertencem ao projeto externo e **não d
 
 ## Estado
 
-**v1.4**
+**v1.5**
 
+- página inicial neutra apenas com o título Terrário;
+- menu lateral como ponto exclusivo de escolha das mudas;
 - menu lateral com múltiplas mudas;
 - alternância entre Novela Vertical e Voltinha;
 - Voltinha incorporado sem modificar seu código;
