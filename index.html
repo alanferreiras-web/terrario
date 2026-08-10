@@ -3,28 +3,174 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#c2cbe1" />
+  <meta name="description" content="Terrário — projetos em desenvolvimento e ferramentas de trabalho em um só lugar." />
   <title>Terrário</title>
-  <link rel="stylesheet" href="garden.css?v=20260725-4" />
-  <style>
-    :root{--bg:#f4f1eb;--card:#fffdf8;--ink:#25211d;--muted:#7d7469;--line:#ded6ca;--soft:#eee7dc;--accent:#8f3d2e;--accent2:#c58a68;--done:#55765b}
-    *{box-sizing:border-box}html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}body{min-height:100vh;overflow:hidden}header{position:relative;z-index:10;height:94px;backdrop-filter:blur(18px);background:rgba(244,241,235,.86);border-bottom:1px solid rgba(222,214,202,.75)}.topbar{width:min(1120px,calc(100% - 32px));height:100%;margin:0 auto;display:flex;align-items:center}.brand-row{display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:center}.menu-button{width:42px;height:42px;border-radius:14px;border:1px solid rgba(222,214,202,.95);background:rgba(255,253,248,.72);color:var(--ink);display:grid;place-items:center;cursor:pointer}.menu-button svg{width:19px;height:19px;stroke:currentColor;stroke-width:2.2;stroke-linecap:round}h1{margin:0;font-size:clamp(1.1rem,2.2vw,1.75rem);letter-spacing:-.04em;line-height:1}.subtitle{margin-top:6px;color:var(--muted);font-size:.88rem}.drawer-backdrop{position:fixed;inset:0;z-index:19;background:rgba(37,33,29,.18);opacity:0;pointer-events:none;transition:opacity .18s}.drawer{position:fixed;z-index:20;top:0;left:0;height:100vh;width:min(340px,calc(100vw - 28px));padding:22px;background:rgba(255,253,248,.97);border-right:1px solid rgba(222,214,202,.94);box-shadow:18px 0 50px rgba(37,33,29,.12);transform:translateX(-102%);transition:transform .22s ease;display:flex;flex-direction:column;gap:20px}body.drawer-open .drawer{transform:translateX(0)}body.drawer-open .drawer-backdrop{opacity:1;pointer-events:auto}.drawer-head{display:flex;align-items:center;justify-content:space-between;gap:14px;padding-bottom:18px;border-bottom:1px solid var(--line)}.drawer-title{margin:0;border:0;padding:0;background:transparent;color:inherit;cursor:pointer;text-align:left;font:inherit;font-size:1.55rem;font-weight:700;letter-spacing:-.055em}.drawer-close{width:36px;height:36px;border-radius:12px;border:1px solid rgba(222,214,202,.95);background:transparent;color:var(--muted);cursor:pointer;font-size:1.2rem}.drawer-section-title{color:var(--accent);text-transform:uppercase;letter-spacing:.12em;font-size:.68rem;font-weight:850}.project-list{display:grid;gap:10px}.project-card{display:block;width:100%;border:1px solid rgba(222,214,202,.9);border-radius:20px;background:rgba(244,241,235,.52);padding:14px;text-align:left;text-decoration:none;color:var(--ink);cursor:pointer}.project-card.active{border-color:rgba(143,61,46,.28);background:linear-gradient(135deg,rgba(143,61,46,.08),rgba(197,138,104,.08)),rgba(255,253,248,.85)}.project-card.placeholder{cursor:default;opacity:.68}.project-name{display:flex;align-items:center;gap:9px;font-weight:800;letter-spacing:-.02em}.project-name:before{content:"";width:8px;height:8px;border-radius:999px;background:var(--done);box-shadow:0 0 0 4px rgba(85,118,91,.1)}.placeholder .project-name:before{background:#b7aa9a;box-shadow:0 0 0 4px rgba(183,170,154,.12)}.project-meta{margin:7px 0 0 17px;color:var(--muted);font-size:.82rem}.drawer-foot{margin-top:auto;color:var(--muted);font-size:.78rem;border-top:1px solid var(--line);padding-top:16px}.terrario-home{display:grid}.project-frame{display:none;width:100%;height:calc(100vh - 94px);border:0;background:var(--bg)}body.project-mode .terrario-home{display:none}body.project-mode .project-frame{display:block}@media(max-width:780px){header{height:122px}.project-frame{height:calc(100vh - 122px)}}
-  </style>
+  <link rel="stylesheet" href="garden.css?v=20260810-6" />
 </head>
 <body>
-  <header><div class="topbar"><div class="brand-row"><button class="menu-button" id="openDrawer" aria-label="Abrir Terrário" aria-expanded="false"><svg viewBox="0 0 24 24"><path d="M4 7h16"></path><path d="M4 12h16"></path><path d="M4 17h16"></path></svg></button><div><h1 id="projectTitle">Terrário</h1><div class="subtitle" id="projectSubtitle"></div></div></div></div></header>
-  <div class="drawer-backdrop" id="drawerBackdrop"></div>
-  <aside class="drawer" id="terrarioDrawer"><div class="drawer-head"><button class="drawer-title" id="homeProject" type="button">Terrário</button><button class="drawer-close" id="closeDrawer" aria-label="Fechar Terrário">×</button></div><div><div class="drawer-section-title">Mudas</div><div class="project-list"><button class="project-card" data-project="novela" data-url="novela.html"><div class="project-name">Novela Vertical</div><div class="project-meta">plano de desenvolvimento</div></button><button class="project-card" data-project="voltinha" data-url="https://alanferreiras-web.github.io/voltinha/"><div class="project-name">Voltinha</div><div class="project-meta">radar editorial</div></button><a class="project-card" href="https://alanferreiras-web.github.io/bancafeiras/" target="_blank" rel="noopener"><div class="project-name">Banca</div><div class="project-meta">abrir em nova aba ↗</div></a><button class="project-card placeholder" aria-disabled="true"><div class="project-name">Nova muda</div><div class="project-meta">em breve</div></button></div></div><div class="drawer-foot">v1.6</div></aside>
-  <div class="terrario-home" aria-label="Jardim de projetos"></div>
-  <iframe class="project-frame" id="projectFrame" title="Projeto" loading="lazy"></iframe>
-  <script>
-    const open=document.getElementById('openDrawer'),close=document.getElementById('closeDrawer'),back=document.getElementById('drawerBackdrop'),frame=document.getElementById('projectFrame'),title=document.getElementById('projectTitle'),subtitle=document.getElementById('projectSubtitle');
-    function openDrawer(){document.body.classList.add('drawer-open');open.setAttribute('aria-expanded','true')}
-    function closeDrawer(){document.body.classList.remove('drawer-open');open.setAttribute('aria-expanded','false')}
-    function showHome(){document.body.classList.remove('project-mode');document.querySelectorAll('.project-card[data-project]').forEach(x=>x.classList.remove('active'));title.textContent='Terrário';subtitle.textContent='';document.title='Terrário';closeDrawer()}
-    function showProject(button){const project=button.dataset.project;document.body.classList.add('project-mode');document.querySelectorAll('.project-card[data-project]').forEach(x=>x.classList.toggle('active',x===button));title.textContent=button.querySelector('.project-name').textContent.trim();subtitle.textContent=project==='voltinha'?'Radar editorial de tendências':'Plano de desenvolvimento — checklist leve';document.title='Terrário — '+title.textContent;if(frame.dataset.project!==project){frame.dataset.project=project;frame.src=button.dataset.url}closeDrawer()}
-    frame.addEventListener('load',()=>{if(frame.dataset.project!=='novela')return;try{const win=frame.contentWindow,doc=frame.contentDocument;if(typeof win.showProject==='function')win.showProject('novela');doc.querySelectorAll('header,.drawer,.drawer-backdrop,.terrario-home,footer,.project-frame').forEach(el=>el.style.display='none');doc.body.classList.remove('home-mode','voltinha-mode','drawer-open');doc.querySelector('main').style.display='block'}catch(e){}});
-    open.onclick=openDrawer;close.onclick=closeDrawer;back.onclick=closeDrawer;document.getElementById('homeProject').onclick=showHome;document.querySelectorAll('.project-card[data-project]').forEach(button=>button.onclick=()=>showProject(button));document.querySelectorAll('.project-card[target="_blank"]').forEach(link=>link.addEventListener('click',closeDrawer));document.addEventListener('keydown',e=>{if(e.key==='Escape')closeDrawer()});
-  </script>
-  <script src="garden.js?v=20260725-4"></script>
+  <main class="dashboard" aria-labelledby="pageTitle">
+    <header class="masthead">
+      <div class="brand-cluster">
+        <button class="menu-button" id="openMenu" type="button" aria-label="Abrir menu de mudas" aria-expanded="false">
+          <span></span><span></span><span></span>
+        </button>
+        <h1 id="pageTitle">Terrário</h1>
+      </div>
+      <div class="datetime" aria-label="Data e hora locais">
+        <strong class="clock-pill" id="clock">--:--</strong>
+        <span class="today" id="today"></span>
+      </div>
+    </header>
+
+    <section class="bento-board" aria-label="Projetos e ferramentas">
+      <button class="muda muda--novela" type="button" data-project="novela" data-url="novela.html" data-stage="1" aria-label="Abrir Novela Vertical, muda em estágio inicial">
+        <span class="muda-visual" aria-hidden="true">
+          <span class="plant plant--novela"><i></i><i></i><i></i><i></i><i></i></span>
+        </span>
+        <span class="muda-copy">
+          <strong>Novela Vertical</strong>
+          <small>estágio 1 · germinando</small>
+        </span>
+      </button>
+
+      <button class="muda muda--voltinha" type="button" data-project="voltinha" data-url="https://alanferreiras-web.github.io/voltinha/" data-stage="2" aria-label="Abrir Voltinha, muda em crescimento">
+        <span class="muda-visual" aria-hidden="true">
+          <span class="plant plant--voltinha"><i></i><i></i><i></i><i></i><i></i></span>
+        </span>
+        <span class="muda-copy">
+          <strong>Voltinha</strong>
+          <small>estágio 2 · crescendo</small>
+        </span>
+      </button>
+
+      <a class="muda muda--banca" href="https://alanferreiras-web.github.io/bancafeiras/" target="_blank" rel="noopener" data-stage="3" aria-label="Abrir Banca em nova aba, muda florescendo">
+        <span class="muda-visual" aria-hidden="true">
+          <span class="plant plant--banca"><i></i><i></i><i></i><i></i><i></i></span>
+        </span>
+        <span class="muda-copy">
+          <strong>Banca <span aria-hidden="true">↗</span></strong>
+          <small>estágio 3 · florescendo</small>
+        </span>
+      </a>
+
+      <div class="side-stack">
+        <article class="widget email-widget" aria-labelledby="emailTitle">
+          <div class="widget-head">
+            <span class="widget-kicker">caixa de entrada</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </div>
+          <div class="email-message">
+            <span class="email-icon" aria-hidden="true">@</span>
+            <div>
+              <h2 id="emailTitle">E-mails importantes</h2>
+              <p>Integração ainda não conectada</p>
+            </div>
+          </div>
+          <span class="integration-label">Gmail · em breve</span>
+        </article>
+      </div>
+
+      <article class="widget pomodoro" aria-labelledby="pomodoroTitle">
+        <div class="widget-head">
+          <span class="widget-kicker">foco rápido</span>
+          <span class="pomodoro-state" id="pomodoroState" aria-live="polite">pronto</span>
+        </div>
+        <div class="timer-row">
+          <div>
+            <h2 id="pomodoroTitle">Pomodoro</h2>
+            <p class="timer" id="timer" aria-live="polite">25:00</p>
+          </div>
+          <button class="timer-toggle" id="timerToggle" type="button" aria-label="Iniciar Pomodoro">▶</button>
+        </div>
+        <div class="timer-progress" aria-hidden="true"><span id="timerProgress"></span></div>
+        <div class="timer-controls" aria-label="Duração do Pomodoro">
+          <button type="button" data-minutes="15">15</button>
+          <button class="active" type="button" data-minutes="25">25</button>
+          <button type="button" data-minutes="50">50</button>
+          <button class="timer-reset" id="timerReset" type="button">reiniciar</button>
+        </div>
+      </article>
+
+      <article class="widget taxi-widget" aria-labelledby="taxiTitle">
+        <div class="taxi-main">
+          <div class="widget-head">
+            <span class="widget-kicker">visão de uso</span>
+            <span class="integration-label" id="taxiStatus" aria-live="polite">conectando…</span>
+          </div>
+          <div class="taxi-copy">
+            <div>
+              <h2 id="taxiTitle">Taxímetro de IA</h2>
+              <p id="taxiSummary">Procurando o serviço local do Taxímetro.</p>
+            </div>
+          </div>
+          <div class="meter" role="progressbar" aria-label="Uso da janela atual" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+            <span id="taxiMeter"></span>
+          </div>
+          <div class="taxi-tasks" id="taxiTasks" aria-label="Tarefas recentes" hidden></div>
+          <div class="taxi-footer">
+            <div class="taxi-sources" id="taxiSources"></div>
+            <button class="taxi-refresh" id="taxiRefresh" type="button">atualizar</button>
+          </div>
+        </div>
+        <div class="taxi-gauge" id="taxiGauge" style="--usage:0" aria-hidden="true">
+          <div><strong id="taxiValue">—</strong><small>uso</small></div>
+        </div>
+      </article>
+
+      <button class="muda muda-slot muda-slot--one" type="button" aria-label="Espaço livre para uma nova muda" disabled>
+        <span aria-hidden="true">+</span><small>próxima muda</small>
+      </button>
+      <button class="muda muda-slot muda-slot--two" type="button" aria-label="Espaço livre para uma nova muda" disabled>
+        <span aria-hidden="true">+</span><small>próxima muda</small>
+      </button>
+      <button class="muda muda-slot muda-slot--three" type="button" aria-label="Espaço livre para uma nova muda" disabled>
+        <span aria-hidden="true">+</span><small>próxima muda</small>
+      </button>
+    </section>
+  </main>
+
+  <div class="menu-backdrop" id="menuBackdrop"></div>
+  <aside class="project-menu" id="projectMenu" aria-hidden="true" aria-label="Todas as mudas">
+    <header class="project-menu-head">
+      <div><small>Terrário</small><strong>Todas as mudas</strong></div>
+      <button id="closeMenu" type="button" aria-label="Fechar menu">×</button>
+    </header>
+    <nav class="project-menu-list" aria-label="Projetos">
+      <button class="menu-project" type="button" data-project="novela" data-url="novela.html" data-title="Novela Vertical">
+        <span class="menu-swatch menu-swatch--novela" aria-hidden="true"></span>
+        <span><strong>Novela Vertical</strong><small>germinando</small></span>
+      </button>
+      <button class="menu-project" type="button" data-project="voltinha" data-url="https://alanferreiras-web.github.io/voltinha/" data-title="Voltinha">
+        <span class="menu-swatch menu-swatch--voltinha" aria-hidden="true"></span>
+        <span><strong>Voltinha</strong><small>crescendo</small></span>
+      </button>
+      <a class="menu-project" href="https://alanferreiras-web.github.io/bancafeiras/" target="_blank" rel="noopener">
+        <span class="menu-swatch menu-swatch--banca" aria-hidden="true"></span>
+        <span><strong>Banca ↗</strong><small>florescendo</small></span>
+      </a>
+    </nav>
+    <div class="menu-section-label">Ferramentas</div>
+    <nav class="project-menu-list" aria-label="Ferramentas">
+      <a class="menu-tool" href="http://127.0.0.1:3000" target="_blank" rel="noopener">
+        <span class="menu-tool-icon" aria-hidden="true">IA</span>
+        <span><strong>Taxímetro de IA ↗</strong><small>uso e atividade dos agentes</small></span>
+      </a>
+    </nav>
+    <p class="project-menu-foot">3 mudas ativas · espaço para mais 3</p>
+  </aside>
+
+  <section class="project-view" id="projectView" aria-hidden="true" aria-label="Projeto aberto">
+    <header class="project-bar">
+      <button id="closeProject" type="button" aria-label="Voltar ao Terrário">←</button>
+      <div>
+        <small>Terrário</small>
+        <strong id="projectViewTitle">Projeto</strong>
+      </div>
+    </header>
+    <iframe id="projectFrame" title="Projeto" loading="lazy"></iframe>
+  </section>
+
+  <script src="garden.js?v=20260810-6"></script>
 </body>
 </html>
