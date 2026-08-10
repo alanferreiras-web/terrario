@@ -119,6 +119,63 @@ Cada muda mantém sua própria documentação para explicar:
 
 Evitar duplicar essas informações aqui reduz divergências e mantém o Terrário leve também como documentação.
 
+## Próximos passos acordados
+
+Os próximos ajustes devem preservar a estrutura atual e priorizar o uso diário no laptop. O Terrário deve funcionar como a página mantida aberta para começar o dia, com leitura rápida, poucas ações e poucos modais.
+
+### Nova organização das mudas
+
+- reduzir o diâmetro das mudas para acomodar **quatro círculos na primeira linha**, dentro do espaço atualmente ocupado pelas três mudas;
+- manter cada muda em proporção `1:1`;
+- preservar a caixa de entrada exatamente como está;
+- tratar inicialmente os novos círculos como espaços vazios, preenchidos pelo usuário;
+- manter a adaptação para telas menores, embora a experiência principal seja desenhada para laptop.
+
+### Representação e sinais de cada projeto
+
+Cada muda deverá:
+
+- exibir um PNG original escolhido para representar o projeto;
+- usar uma borda circular como indicador da porcentagem de desenvolvimento;
+- receber futuramente o progresso por um padrão de dados publicado pelo próprio projeto, sem transferir suas demandas internas para o Terrário;
+- permitir pequenos sinais externos e contextuais, como uma carta quando uma nova edição da Voltinha estiver pronta;
+- ocultar esses sinais quando não houver novidade, evitando poluição visual.
+
+No laptop, o hover poderá revelar ações leves sobre a própria muda. O clique principal deve abrir o link do projeto. Controles complementares podem aparecer em um pequeno popover, sem exigir um modal de navegação. A integração específica com grupos de abas do Chrome não faz parte desta etapa.
+
+### Cadastro pelo espaço vazio
+
+O botão `+` de uma posição vazia abrirá um único modal para criar ou editar uma muda. O formulário deverá permitir:
+
+- informar o nome do projeto;
+- colar o link principal do projeto no GitHub;
+- enviar o PNG de representação;
+- indicar se o projeto está em desenvolvimento ou concluído;
+- escolher se ele permanece visível no painel ou fica guardado na bandeja de projetos.
+
+Ao salvar, o Terrário deverá criar a muda, usar o link como destino principal e adicionar automaticamente o projeto ao menu lateral.
+
+O **estado do projeto** e o **local de exibição** são informações independentes. Assim, um projeto concluído pode continuar no painel, como a Voltinha, enquanto um projeto concluído ou ainda incompleto pode ser guardado para uso futuro.
+
+### Bandeja de projetos
+
+A terceira linha receberá uma bandeja compacta para projetos guardados. Ela deve representar um arquivo acessível, sem competir visualmente com as mudas ativas. Um projeto guardado poderá ser reaberto, editado ou devolvido ao painel posteriormente.
+
+### Persistência local
+
+Nesta etapa, não haverá conta, servidor de dados ou sincronização entre dispositivos:
+
+- metadados e preferências dos projetos serão mantidos no `localStorage`;
+- imagens PNG serão armazenadas no `IndexedDB`;
+- os dados pertencerão ao navegador usado no laptop;
+- limpar os dados do navegador poderá apagar os cadastros locais.
+
+Exportação, importação de backup e sincronização poderão ser adicionadas depois sem alterar o fluxo principal do modal.
+
+### Integrações futuras
+
+Um projeto poderá futuramente receber um link do Notion para alimentar sua visualização ou seus sinais de progresso. Essa integração fica fora da primeira implementação e não deve ampliar o modal ou a arquitetura agora.
+
 ## Arquitetura
 
 O Terrário é uma aplicação estática em HTML, CSS e JavaScript puro, compatível com GitHub Pages.
