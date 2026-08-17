@@ -6,7 +6,8 @@
     notes: 'terrario-prototype-notes',
     activeProject: 'terrario-active-project',
     timeTotals: 'terrario-time-totals',
-    menuOrder: 'terrario-menu-order'
+    menuOrder: 'terrario-menu-order',
+    panelOrder: 'terrario-panel-order'
   };
 
   const RADAR_ENDPOINT = 'https://terrario-api.alanferreiras.workers.dev/radar';
@@ -98,18 +99,22 @@
   let notes = readJson(STORAGE.notes, {});
   let timeTotals = readJson(STORAGE.timeTotals, {});
   let menuOrder = readJson(STORAGE.menuOrder, { project: [], application: [] });
+  let panelOrder = readJson(STORAGE.panelOrder, []);
   let activeProjectId = localStorage.getItem(STORAGE.activeProject) || null;
   let noteProjectId = null;
   let editingId = null;
   let draftImage = '';
   let projectSync = {};
   let draggedProjectId = null;
+  let draggedPanelProjectId = null;
+  let nowTaskGroup = 'doing';
   let projectTimerRunning = false;
   let projectTimerProjectId = null;
   let projectTimerLastTick = 0;
   if (!Array.isArray(menuOrder.project) || !Array.isArray(menuOrder.application)) {
     menuOrder = { project: [], application: [] };
   }
+  if (!Array.isArray(panelOrder)) panelOrder = [];
 
   function readJson(key, fallback) {
     try {
@@ -176,17 +181,12 @@
     return safe ? safe.todo + safe.doing + safe.done + safe.none : null;
   }
 
-  function projectTaskHighlights(project) {
-    if (Array.isArray(project.recentTasks) && project.recentTasks.length) {
-      return project.recentTasks.slice(0, 3).map((task) => ({ title: task.title, meta: task.status || '' }));
-    }
-    const tasks = safeTasks(project.tasks);
-    if (!tasks) return [];
-    return [
-      { title: 'Em andamento', meta: String(tasks.doing) },
-      { title: 'A fazer', meta: String(tasks.todo) },
-      { title: 'Concluídas', meta: String(tasks.done) }
-    ].filter((task) => Number(task.meta) > 0);
+  function normalizedTaskStatus(status = '') {
+    const normalized = String(status).normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toLowerCase();
+    if (['doing', 'em andamento'].includes(normalized)) return 'doing';
+    if (['todo', 'a fazer'].includes(normalized)) return 'todo';
+    if (['done', 'concluido', 'concluida'].includes(normalized)) return 'done';
+    return 'none';
   }
 
   function developmentGradient(tasks, colors = {}) {
@@ -208,8 +208,9 @@
 
   function formatDuration(totalSeconds) {
     const seconds = Math.max(0, Math.floor(Number(totalSeconds) || 0));
-    return [Math.floor(seconds / 3600), Math.floor(seconds % 3600 / 60), seconds % 60]
-      .map((value) => String(value).padStart(2, '0')).join(':');
+    const hours = Math.floor(seconds / 3600);
+    const minutes = String(Math.floor(seconds % 3600 / 60)).padStart(2, '0');
+    return `${hours}h ${minutes}m`;
   }
 
   function projectState(project) {
@@ -242,7 +243,7 @@
     const focus = project.kind === 'project' && showFocus
       ? `<button class="icon-button focus-action" type="button" data-action="focus" data-project-id="${escapeHtml(project.id)}" data-tooltip="Trabalhar agora" aria-label="Trabalhar agora em ${escapeHtml(project.name)}"><span aria-hidden="true">▶</span></button>`
       : '';
-    return `<article class="project-cell${compact ? ' compact' : ''}" data-project-id="${escapeHtml(project.id)}">
+    return `<article class="project-cell${compact ? ' compact' : ''}" draggable="true" data-panel-drag-id="${escapeHtml(project.id)}" data-project-id="${escapeHtml(project.id)}">
       <div class="project-interaction">
         <button class="project-main-action" type="button" data-action="open" data-project-id="${escapeHtml(project.id)}" aria-label="Abrir link de ${escapeHtml(project.name)}">
           <span class="project-ring ${visual}${project.signal ? ' has-signal' : ''}"${background}><span class="project-glass">${image}</span></span>${signal}${completed}
@@ -265,7 +266,7 @@
 
   function renderProjects() {
     const active = activeProject();
-    const visible = projects.filter((project) => project.location === 'panel' && project.id !== active?.id);
+    const visible = orderPanelProjects().filter((project) => project.id !== active?.id);
     elements.projectsGrid.innerHTML = visible.map((project) => projectCardHtml(project)).join('');
     elements.nowCard.classList.toggle('has-project', Boolean(active));
     elements.nowTopline.classList.toggle('dark-copy', !active);
@@ -273,22 +274,42 @@
     elements.focusStatus.textContent = projectTimerRunning ? 'contando' : active ? 'pausado' : 'livre';
     if (active) {
       const image = active.image ? `<img src="${escapeHtml(active.image)}" alt="">` : escapeHtml(initials(active.name));
-      const notion = active.notionUrl
-        ? `<button type="button" data-action="notion" data-project-id="${escapeHtml(active.id)}">Notion ↗</button>` : '';
-      const highlights = projectTaskHighlights(active);
-      const tasks = highlights.length
-        ? highlights.map((task) => `<div class="now-task"><span>${escapeHtml(task.title)}</span><strong>${escapeHtml(task.meta)}</strong></div>`).join('')
-        : '<div class="now-task is-empty">Tarefas recentes aparecerão aqui.</div>';
+      const safe = safeTasks(active.tasks);
+      const total = taskTotal(safe);
+      const groups = [
+        ['doing', 'Em andamento'],
+        ['todo', 'A fazer'],
+        ['none', 'Sem status']
+      ];
+      const accordion = groups.map(([id, label]) => {
+        const groupTasks = (Array.isArray(active.recentTasks) ? active.recentTasks : [])
+          .filter((task) => normalizedTaskStatus(task.status) === id)
+          .slice(0, 3);
+        const count = safe?.[id] ?? groupTasks.length;
+        const isOpen = nowTaskGroup === id;
+        const taskItems = groupTasks.length
+          ? groupTasks.map((task) => `<a href="${escapeHtml(task.url || active.notionUrl || active.url)}" target="_blank" rel="noopener noreferrer"><span>${escapeHtml(task.title)}</span><span aria-hidden="true">↗</span></a>`).join('')
+          : `<span class="now-task-empty">${count ? 'Nomes das tarefas ainda não recebidos do Notion.' : 'Nenhuma tarefa'}</span>`;
+        return `<div class="now-task-group${isOpen ? ' is-open' : ''}">
+          <button type="button" data-action="now-group" data-group="${id}" aria-expanded="${isOpen}"><span>${label}</span><span class="now-task-meta">${count}<span aria-hidden="true">⌄</span></span></button>
+          ${isOpen ? `<div class="now-task-items">${taskItems}</div>` : ''}
+        </div>`;
+      }).join('');
+      const pageUrl = active.notionUrl || active.url;
       elements.focusContent.innerHTML = `<div class="now-content">
-        <div class="now-identity"><span class="now-avatar" aria-hidden="true">${image}</span><strong>${escapeHtml(active.name)}</strong></div>
-        <div class="now-time-row"><div><small>Tempo do projeto</small><strong>${formatDuration(timeTotals[active.id])}</strong></div>
-          <button class="now-timer-toggle" type="button" data-action="project-timer" aria-label="${projectTimerRunning ? 'Pausar' : 'Iniciar'} tempo do projeto"><span aria-hidden="true">${projectTimerRunning ? 'Ⅱ' : '▶'}</span></button></div>
-        <div class="now-actions" aria-label="Acessos rápidos de ${escapeHtml(active.name)}">
-          <button type="button" data-action="open" data-project-id="${escapeHtml(active.id)}">abrir ↗</button>${notion}
-          <button type="button" data-action="notes" data-project-id="${escapeHtml(active.id)}">notas</button>
-          <button type="button" data-action="clear-focus">encerrar</button>
+        <div class="now-project-mark">
+          <span class="now-project-ring" style="background:${escapeHtml(developmentGradient(active.tasks, active.taskColors))}" aria-hidden="true"><span class="now-avatar">${image}</span></span>
+          <strong${projectTimerRunning ? ' class="is-running"' : ''}>${formatDuration(timeTotals[active.id])}</strong>
         </div>
-        <div class="now-task-list" aria-label="Tarefas recentes">${tasks}</div>
+        <div class="now-main"><h2>${escapeHtml(active.name)}</h2><div class="now-accordion" aria-label="Tarefas do projeto">${accordion}</div>
+          <p class="now-completed">${total === null ? 'Contagem de tarefas ainda não disponível.' : `${safe.done} tarefas de ${total} concluídas.`}</p>
+        </div>
+        <div class="now-actions" aria-label="Acessos rápidos de ${escapeHtml(active.name)}">
+          <button type="button" data-action="notes" data-project-id="${escapeHtml(active.id)}" data-tooltip="Bloquinho de notas" aria-label="Abrir bloquinho de notas">✎</button>
+          <button type="button" data-action="project-page" data-url="${escapeHtml(pageUrl)}" data-tooltip="Página do projeto" aria-label="Abrir página do projeto">↗</button>
+          <button type="button" class="${projectTimerRunning ? 'is-timing' : ''}" data-action="project-timer" data-tooltip="${projectTimerRunning ? 'Pausar contagem' : 'Iniciar contagem'}" aria-label="${projectTimerRunning ? 'Pausar' : 'Iniciar'} tempo do projeto"><span aria-hidden="true">${projectTimerRunning ? '■' : '▶'}</span></button>
+          <button type="button" class="is-placeholder" data-tooltip="Espaço reservado" aria-label="Espaço reservado" disabled>+</button>
+        </div>
       </div>`;
     } else {
       elements.focusContent.innerHTML = '<div class="focus-empty"><span aria-hidden="true">▶</span><strong>Nenhum projeto em foco</strong><small>Clique no play de uma muda para começar.</small></div>';
@@ -298,6 +319,17 @@
     const applications = orderMenuGroup('application');
     elements.projectMenuList.innerHTML = orderedProjects.map(drawerProjectHtml).join('');
     elements.applicationMenuList.innerHTML = applications.map(drawerProjectHtml).join('');
+  }
+
+  function orderPanelProjects() {
+    return projects.filter((project) => project.location === 'panel').sort((first, second) => {
+      const firstIndex = panelOrder.indexOf(first.id);
+      const secondIndex = panelOrder.indexOf(second.id);
+      if (firstIndex < 0 && secondIndex < 0) return 0;
+      if (firstIndex < 0) return 1;
+      if (secondIndex < 0) return -1;
+      return firstIndex - secondIndex;
+    });
   }
 
   function orderMenuGroup(kind) {
@@ -317,8 +349,9 @@
 
   function drawerProjectHtml(project) {
     const image = project.image ? `<img src="${escapeHtml(project.image)}" alt="">` : escapeHtml(initials(project.name));
+    const isActive = project.id === activeProjectId;
     const focus = project.kind === 'project'
-      ? `<button class="drawer-focus" type="button" data-action="focus" data-project-id="${escapeHtml(project.id)}" data-tooltip="Trabalhar agora" aria-label="Trabalhar agora em ${escapeHtml(project.name)}">▶</button>` : '';
+      ? `<button class="drawer-focus" type="button" data-action="${isActive ? 'clear-focus' : 'focus'}" data-project-id="${escapeHtml(project.id)}" data-tooltip="${isActive ? 'Encerrar foco' : 'Trabalhar agora'}" aria-label="${isActive ? 'Tirar' : 'Trabalhar agora em'} ${escapeHtml(project.name)}">${isActive ? '■' : '▶'}</button>` : '';
     return `<div class="drawer-project" draggable="true" data-drag-id="${escapeHtml(project.id)}" data-kind="${project.kind}">
       <span class="drawer-drag" aria-hidden="true">⋮⋮</span>
       <span class="drawer-thumbnail" style="background:${projectColor(project.id)}" aria-hidden="true">${image}</span>
@@ -395,6 +428,16 @@
     renderProjects();
   }
 
+  function movePanelProject(targetId) {
+    if (!draggedPanelProjectId || draggedPanelProjectId === targetId) return;
+    const next = orderPanelProjects().map((project) => project.id).filter((id) => id !== draggedPanelProjectId);
+    const targetIndex = next.indexOf(targetId);
+    next.splice(targetIndex < 0 ? next.length : targetIndex, 0, draggedPanelProjectId);
+    panelOrder = next;
+    localStorage.setItem(STORAGE.panelOrder, JSON.stringify(panelOrder));
+    renderProjects();
+  }
+
   function openNotes(project) {
     if (!project) return;
     if (noteProjectId === project.id && !elements.noteDrawer.hidden) {
@@ -439,6 +482,11 @@
     if (button.dataset.action === 'focus') setFocus(project);
     if (button.dataset.action === 'notes') openNotes(project);
     if (button.dataset.action === 'notion' && project?.notionUrl) window.open(project.notionUrl, '_blank', 'noopener,noreferrer');
+    if (button.dataset.action === 'project-page' && button.dataset.url) window.open(button.dataset.url, '_blank', 'noopener,noreferrer');
+    if (button.dataset.action === 'now-group' && ['doing', 'todo', 'none'].includes(button.dataset.group)) {
+      nowTaskGroup = button.dataset.group;
+      renderProjects();
+    }
     if (button.dataset.action === 'project-timer') projectTimerRunning ? pauseProjectTimer() : startProjectTimer();
     if (button.dataset.action === 'edit') openProjectModal(project);
     if (button.dataset.action === 'clear-focus') clearFocus();
@@ -766,6 +814,18 @@
   }
 
   elements.projectsGrid.addEventListener('click', handleProjectAction);
+  elements.projectsGrid.addEventListener('dragstart', (event) => {
+    const card = event.target.closest('[data-panel-drag-id]');
+    draggedPanelProjectId = card?.dataset.panelDragId || null;
+    if (event.dataTransfer) event.dataTransfer.effectAllowed = 'move';
+  });
+  elements.projectsGrid.addEventListener('dragend', () => { draggedPanelProjectId = null; });
+  elements.projectsGrid.addEventListener('dragover', (event) => event.preventDefault());
+  elements.projectsGrid.addEventListener('drop', (event) => {
+    event.preventDefault();
+    const card = event.target.closest('[data-panel-drag-id]');
+    if (card) movePanelProject(card.dataset.panelDragId);
+  });
   elements.focusContent.addEventListener('click', handleProjectAction);
   elements.projectMenuList.addEventListener('click', handleProjectAction);
   elements.applicationMenuList.addEventListener('click', handleProjectAction);

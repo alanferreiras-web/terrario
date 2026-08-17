@@ -29,7 +29,11 @@ Ele não reproduz a interface, as regras, os dados ou a documentação interna d
 - o projeto selecionado sai temporariamente do grid e ocupa `Now`;
 - sem seleção, a área mostra `Nenhum projeto em foco`;
 - o contador do `Now` inicia, pausa e acumula o tempo do projeto selecionado;
-- `Now` oferece atalhos para o projeto, Notion e bloquinho, além de um resumo de tarefas;
+- o tempo acumulado aparece em horas e minutos, sem competir visualmente com o nome e as tarefas;
+- `Now` ocupa mais espaço que o Pomodoro e oferece quatro acessos alinhados à direita: bloquinho, página do projeto, iniciar/parar o contador e um espaço reservado;
+- as tarefas aparecem em sanfonas exclusivas, na ordem `Em andamento`, `A fazer` e `Sem status`;
+- somente uma sanfona fica aberta por vez e ela mostra até três nomes; cada nome abre a tarefa correspondente no Notion em outra aba;
+- a linha final informa quantas tarefas foram concluídas em relação ao total, sem listar as concluídas;
 - o Pomodoro funciona livremente em ciclos de 15, 25 ou 50 minutos e não altera o tempo dos projetos;
 - os dois relógios podem funcionar separadamente ou ao mesmo tempo;
 - encerrar ou trocar o foco durante uma sessão ativa exige confirmação.
@@ -45,6 +49,7 @@ Projetos e aplicações usam a mesma representação circular e ocupam o mesmo g
 - um projeto concluído pode ser promovido a aplicação por edição;
 - aplicações podem exibir sinais breves enviados por suas integrações;
 - um registro pode aparecer no painel e no menu ou somente no menu lateral.
+- a ordem visual do painel pode ser alterada arrastando as próprias mudas; essa ordem é independente da prioridade do menu.
 
 Não existe bandeja de projetos. `Painel + menu` e `Somente menu` cobrem os dois modos de exibição.
 
@@ -86,6 +91,8 @@ O menu lateral reúne todos os registros, inclusive os marcados como `Somente me
 - **Ferramentas:** atalhos para Pomodoro, Taxímetro, Caixa de entrada, Rotinas e Radar.
 
 Os registros podem ser arrastados dentro do próprio grupo para definir uma prioridade manual. A ordem é salva no navegador. O menu não repete fase, tipo ou local de exibição abaixo dos nomes; essas informações pertencem à edição ou aos sinais do painel.
+
+A prioridade do menu e a ordem do painel são independentes: o menu organiza acessos dentro dos grupos `Projetos` e `Aplicações`, enquanto o painel mistura os dois tipos e por isso possui seu próprio arrastar e soltar.
 
 O cadastro e a edição usam o mesmo formulário. Os campos são:
 
@@ -165,11 +172,17 @@ Um endpoint de projeto pode devolver:
     "none": "#9da6a1"
   },
   "signal": { "kind": "attention", "label": "Revisão disponível" },
-  "recentTasks": [{ "title": "Revisar material", "status": "Em andamento" }]
+  "recentTasks": [
+    {
+      "title": "Revisar material",
+      "status": "doing",
+      "url": "https://app.notion.com/p/..."
+    }
+  ]
 }
 ```
 
-`tasks`, `taskColors`, `signal` e `recentTasks` são opcionais. As contagens precisam ser números finitos e não negativos. Enquanto o Worker não enviar nomes de tarefas recentes, o `Now` usa as contagens por status como resumo. O frontend preserva os dados anteriores quando uma atualização falha.
+`tasks`, `taskColors`, `signal` e `recentTasks` são opcionais. As contagens precisam ser números finitos e não negativos. Em `recentTasks`, `status` usa `doing`, `todo` ou `none`, e `url` aponta para a página individual da tarefa. O Worker envia no máximo três tarefas por grupo e nunca inclui nomes de tarefas concluídas. Quando os nomes ainda não estiverem disponíveis, o `Now` mantém a contagem e mostra um estado vazio explícito. O frontend preserva os dados anteriores quando uma atualização falha.
 
 ### Contrato do Radar
 
@@ -198,8 +211,9 @@ Nesta fase, ficam no `localStorage` do navegador:
 - projeto em foco;
 - tempo acumulado por projeto;
 - prioridade dos registros no menu lateral.
+- ordem independente das mudas no painel.
 
-Esses dados ainda não sincronizam entre computadores ou navegadores. A futura sincronização poderá usar Cloudflare D1 para registros e textos e R2 para arquivos, sem expor credenciais no frontend.
+Esses dados ainda não sincronizam entre computadores ou navegadores. A próxima etapa prevista é substituir essas gravações por uma API protegida no Cloudflare Worker, usando uma planilha no Google Drive como base inicial. Essa migração será tratada separadamente e não deve expor credenciais no frontend.
 
 Limpar os dados do site no navegador pode remover cadastros, imagens, notas e tempos acumulados. Até existir sincronização, não tratar o armazenamento local como backup definitivo.
 
@@ -219,6 +233,8 @@ O Terrário continua como aplicação estática compatível com GitHub Pages.
 - `garden.css` — layout, estados visuais e responsividade;
 - `garden.js` — cadastro, persistência local, foco, Pomodoro e integrações;
 - `novela.html` — aplicação Novelinha preservada como superfície independente;
+- `cloudflare-worker/worker.js` — ponte protegida que lê resumos autorizados do Notion;
+- `cloudflare-worker/wrangler.jsonc` — configuração de publicação do Worker, sem segredos;
 - `tests/terrario.test.mjs` — verificações estruturais da página estática.
 
 Não existem segredos do Notion no repositório. Credenciais e consultas privadas permanecem no Cloudflare Worker.
@@ -229,6 +245,7 @@ Antes de publicar uma alteração:
 
 ```bash
 node --check garden.js
+node --check cloudflare-worker/worker.js
 node --test tests/terrario.test.mjs
 ```
 

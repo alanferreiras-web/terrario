@@ -46,6 +46,7 @@ test('mantém integrações e estado local necessários', async () => {
     'terrario-active-project',
     'terrario-time-totals',
     'terrario-menu-order',
+    'terrario-panel-order',
     'terrario-prototype-notes'
   ]) assert.match(javascript, new RegExp(key));
 
@@ -55,4 +56,15 @@ test('mantém integrações e estado local necessários', async () => {
   assert.match(javascript, /projectTimerRunning/);
   assert.match(javascript, /draggable="true"/);
   assert.match(javascript, /moveMenuProject/);
+  assert.match(javascript, /movePanelProject/);
+  assert.match(javascript, /nowTaskGroup/);
+  assert.match(javascript, /tarefas de .* concluídas/);
+});
+
+test('o Worker entrega títulos e links individuais para o Now', async () => {
+  const worker = await source('cloudflare-worker/worker.js');
+  assert.match(worker, /recentTasks/);
+  assert.match(worker, /title: readTitle\(item\)/);
+  assert.match(worker, /url: item\.url/);
+  assert.match(worker, /\["doing", "todo", "none"\]/);
 });
