@@ -1,186 +1,230 @@
 # Terrário
 
-O Terrário é a página pessoal que concentra projetos em desenvolvimento e ferramentas de apoio ao trabalho. A interface funciona como um ponto de orientação rápido: mostra o que está crescendo, dá acesso direto a cada projeto e reúne somente os sinais úteis para o dia a dia.
+O Terrário é a página pessoal que concentra projetos, aplicações prontas e ferramentas de apoio ao trabalho. A interface funciona como um ponto de orientação rápido: mostra o que está em andamento, dá acesso direto a cada projeto e reúne somente os sinais úteis para o dia a dia.
 
 **Página publicada:** https://alanferreiras-web.github.io/terrario/
 
-## Princípios de uso
+## Responsabilidade do Terrário
 
-- **Projeto é muda.** Cada projeto em desenvolvimento ocupa um círculo próprio e pode ter sua representação visual alterada conforme amadurece.
-- **Ferramenta não é muda.** Pomodoro, Taxímetro e e-mail ajudam o trabalho, mas aparecem como widgets ou links separados.
-- **Pouca informação por vez.** A home prioriza leitura imediata e evita reproduzir painéis completos de cada projeto.
-- **Detalhes permanecem na origem.** Demandas, regras e documentação interna pertencem ao README de cada projeto.
-- **A home continua útil sem integrações.** Widgets desconectados assumem um estado claro e não impedem o acesso às mudas.
+O Terrário é uma camada de controle pessoal. Sua responsabilidade é cadastrar, organizar e abrir registros, mostrar um resumo autorizado de cada integração e apoiar a rotina de trabalho.
+
+Ele não reproduz a interface, as regras, os dados ou a documentação interna dos projetos e aplicações. Cada destino continua responsável por seu próprio funcionamento. Quando o Terrário abre uma URL ou recebe um resumo, sua atuação termina no acesso, no enquadramento visual e nos sinais previstos neste README.
+
+## Princípios
+
+- **Projeto é processo criativo.** Pode estar em desenvolvimento ou concluído.
+- **Aplicação é ferramenta de trabalho.** Pode exibir sinais úteis vindos de sua própria integração.
+- **Concluído não significa aplicação.** A promoção de projeto para aplicação é uma decisão de cadastro.
+- **Pouca informação por vez.** O painel mostra orientação e sinais, não painéis internos completos.
+- **A origem continua sendo a fonte de verdade.** O Terrário consome resumos normalizados.
+- **Falhas de integração não bloqueiam a home.** Cada módulo possui um estado vazio ou desconectado explícito.
 
 ## Organização da interface
 
-### Cabeçalho
+### Trabalho e tempo
 
-O cabeçalho reúne:
+`Trabalhando agora` e o Pomodoro ficam lado a lado no topo da área principal.
 
-- botão sanfona para abrir o menu lateral;
-- título **Terrário**;
-- relógio local;
-- data completa em uma pílula separada.
+- o botão de play exibido no hover de uma muda define o projeto em foco;
+- o projeto selecionado sai temporariamente do grid e ocupa `Trabalhando agora`;
+- sem seleção, a área mostra `Nenhum projeto em foco`;
+- o Pomodoro funciona com ciclos de 15, 25 ou 50 minutos;
+- com um projeto em foco, o tempo decorrido é acumulado nesse projeto;
+- sem projeto em foco, o Pomodoro continua funcionando, mas o tempo não é atribuído;
+- encerrar ou trocar o foco durante uma sessão ativa exige confirmação.
 
-### Painel bento
+O tempo é contado enquanto a página permanece aberta. O total acumulado é salvo localmente no navegador.
 
-A área principal usa uma composição bento responsiva com:
+### Mudas e aplicações
 
-- mudas sempre apresentadas em círculos de proporção `1:1`;
-- três mudas ativas no estado atual;
-- três espaços reservados, permitindo visualizar até seis projetos por ciclo;
-- widgets de apoio encaixados entre as mudas;
-- reorganização automática para telas menores.
+Projetos e aplicações usam a mesma representação circular e ocupam o mesmo grid.
 
-Os círculos podem representar três estados visuais: **germinando**, **crescendo** e **florescendo**. O Terrário exibe esse estado, mas a regra definitiva que determina a evolução de cada muda ainda pertence ao fluxo do respectivo projeto.
+- projetos em desenvolvimento usam uma borda em gráfico de rosca, proporcional às tarefas;
+- projetos concluídos continuam no grupo de projetos e aparecem depois dos que estão em desenvolvimento;
+- um projeto concluído pode ser promovido a aplicação por edição;
+- aplicações podem exibir sinais breves enviados por suas integrações;
+- um registro pode aparecer no painel e no menu ou somente no menu lateral.
 
-### Menu lateral
+Não existe bandeja de projetos. `Painel + menu` e `Somente menu` cobrem os dois modos de exibição.
 
-O menu lateral é a lista completa e textual do Terrário. Ele separa:
+A borda de um projeto em desenvolvimento representa quatro grupos de tarefas:
 
-- **Mudas:** projetos em desenvolvimento;
-- **Ferramentas:** utilitários já funcionais que não participam do ciclo de crescimento.
+- `done`: concluídas, em verde;
+- `doing`: em andamento, em azul;
+- `todo`: a fazer, em laranja;
+- `none`: sem status, em cinza.
 
-O menu fecha pelo botão, pelo fundo, pela tecla `Esc` ou ao escolher um destino. O foco retorna ao controle adequado para manter a navegação por teclado previsível.
+Os segmentos são proporcionais às contagens recebidas. Uma tarefa sem prazo ainda participa da borda; prazo e status são informações independentes.
 
-## Mudas atuais
+### Coluna de apoio
 
-- **Novela Vertical** — aberta dentro do Terrário em uma visualização dedicada.
-- **Voltinha** — aplicação independente carregada dentro do Terrário.
-- **Banca** — aplicação externa aberta em uma nova aba.
+A coluna direita reúne:
 
-Esta lista descreve apenas o comportamento de navegação. Escopo, tarefas, dados e regras internas devem ser consultados no README de cada projeto.
+- **Taxímetro de IA:** consumo e tarefas recentes do serviço local;
+- **Radar de hoje:** entregáveis com prazo para hoje e amanhã vindos do Notion;
+- **Quadro de avisos:** um espaço único para Caixa de entrada e Rotinas.
 
-## Widgets
+Caixa de entrada e Rotinas continuam em estados vazios explícitos até receberem integrações próprias.
 
-### Pomodoro
+### Bloquinho de notas
 
-O Pomodoro oferece ciclos rápidos de **15, 25 ou 50 minutos**.
+Cada projeto ou aplicação possui um campo de texto simples para consulta rápida.
 
-- iniciar, pausar e reiniciar com poucos cliques;
-- contador branco de alto contraste;
-- barra de progresso do ciclo;
-- aviso visual ao finalizar;
-- dois sinais sonoros curtos ao concluir;
-- alteração temporária do título da página para indicar a conclusão.
+- abre pelo botão de notas exibido no hover;
+- aparece em uma gaveta lateral retrátil;
+- fecha pelo `×`, pela tecla `Esc` ou pelo mesmo botão de notas;
+- salva automaticamente no navegador;
+- não possui formatação.
 
-O som é preparado após a primeira interação com o botão, respeitando as restrições de reprodução automática do navegador. Não existe notificação do sistema operacional.
+### Menu lateral e cadastro
 
-### Taxímetro de IA
+O menu lateral reúne todos os registros, inclusive os marcados como `Somente menu`, e separa:
 
-O widget consulta o serviço local do projeto **Taxímetro de IAs** e resume o retorno de `/api/widget`.
+- **Projetos:** em desenvolvimento primeiro, concluídos depois;
+- **Aplicações:** ferramentas prontas incorporadas à rotina;
+- **Ferramentas:** atalhos para Pomodoro, Taxímetro, Caixa de entrada, Rotinas e Radar.
 
-Ele mostra:
+O cadastro e a edição usam o mesmo formulário. Os campos são:
 
-- fonte principal, normalmente Codex;
-- janela e percentual de uso;
-- barra e medidor circular de consumo;
-- fontes disponíveis;
-- até três tarefas recentes da fonte principal;
-- título da tarefa, tokens e tempo desde a atividade;
-- atualização manual e atualização automática a cada cinco minutos.
+- nome;
+- URL principal;
+- PNG opcional;
+- tipo: projeto ou aplicação;
+- fase do projeto: em desenvolvimento ou concluído;
+- exibição: painel e menu ou somente menu;
+- link opcional do Notion.
 
-As tarefas vêm de `data.sources[].conversations`. O Terrário não cria relações entre elas, não consulta outro endpoint e não lê conteúdo de mensagens. Títulos longos são truncados em uma linha. Quando não existem tarefas, a área correspondente é ocultada.
+Tipo, fase e exibição são independentes. Ter uma aplicação publicada não obriga um registro a ser classificado como aplicação.
 
-O navegador tenta acessar o serviço local nas portas `3000` e `3001`. Se ele estiver desligado, o widget mostra um estado desconectado e oferece acesso à página local do Taxímetro. O menu lateral também possui um link para a ferramenta, separado das mudas.
+### Modelo de registro
 
-Credenciais, conectores, cache e coleta de dados continuam sob responsabilidade do projeto Taxímetro. O Terrário recebe somente o modelo resumido entregue pelo endpoint.
+Cada registro usa os seguintes campos:
 
-### E-mails importantes
+- `id`: identificador estável;
+- `name`: nome exibido;
+- `url`: destino principal;
+- `notionUrl`: referência opcional do Notion;
+- `kind`: `project` ou `application`;
+- `phase`: `development` ou `completed`;
+- `location`: `panel` ou `menu`;
+- `image`: PNG opcional;
+- `tasks`: contagens normalizadas por status;
+- `taskColors`: cores opcionais da borda;
+- `signal`: aviso breve opcional;
+- `integrationUrl`: endpoint opcional de resumo.
 
-O espaço de e-mails está desenhado, mas ainda não possui integração real. Até a conexão existir, ele informa explicitamente que o Gmail não está conectado e não exibe mensagens fictícias.
+O cadastro local não cria automaticamente uma integração. Informar um link do Notion registra a referência, mas a leitura privada só passa a funcionar quando um endpoint protegido correspondente for configurado.
 
-## Navegação dos projetos
+## Registros iniciais
 
-Novela Vertical e Voltinha usam uma visualização sobreposta com barra própria para retornar ao Terrário. A Banca permanece em nova aba para preservar sua aplicação independente. A visualização sobreposta também pode ser fechada com `Esc`.
+- Novelinha;
+- Voltinha;
+- Banca;
+- Leader Assessment;
+- Iorguti;
+- Trendices;
+- Kollab.
 
-O Terrário não deve modificar código ou estado interno de uma aplicação incorporada. Sua responsabilidade termina no acesso, no enquadramento visual e nos sinais resumidos autorizados por cada projeto.
+Todos são registros editáveis.
 
-## Dados locais e privacidade
+## Integração com Notion
 
-- estágios das mudas podem ser recuperados do `localStorage` do navegador;
-- o progresso interno da Novela Vertical continua armazenado pela própria página;
-- o Pomodoro funciona apenas durante a sessão aberta;
-- credenciais do Taxímetro permanecem no serviço local e não são copiadas para o Terrário;
-- o widget de e-mail não acessa dados enquanto estiver desconectado.
+O navegador não recebe credenciais do Notion. Ele consulta o Cloudflare Worker `terrario-api`, que devolve apenas resumos normalizados.
 
-## Responsabilidade da documentação
+Rotas usadas atualmente:
 
-Este README documenta a **usabilidade geral do Terrário**: organização, navegação, widgets, integrações e limites entre projetos.
+- `/projects/leader-assessment`;
+- `/projects/iorguti`;
+- `/projects/trendices`;
+- `/projects/kollab`;
+- `/radar`.
 
-Cada muda mantém sua própria documentação para explicar:
+As informações são atualizadas:
 
-- objetivo e escopo;
-- demandas internas;
-- dados e integrações;
-- critérios de progresso;
-- instalação e manutenção específicas.
+- ao abrir a página;
+- a cada cinco minutos;
+- ao retornar para a aba;
+- ao usar o botão `Atualizar dados`.
 
-Evitar duplicar essas informações aqui reduz divergências e mantém o Terrário leve também como documentação.
+Tarefas sem prazo continuam válidas para a borda do projeto. Quando uma data for preenchida no Notion, o Worker também poderá incluí-la no Radar de hoje.
 
-## Próximos passos acordados
+### Contrato de projeto
 
-Os próximos ajustes devem preservar a estrutura atual e priorizar o uso diário no laptop. O Terrário deve funcionar como a página mantida aberta para começar o dia, com leitura rápida, poucas ações e poucos modais.
+Um endpoint de projeto pode devolver:
 
-### Nova organização das mudas
+```json
+{
+  "tasks": { "todo": 2, "doing": 1, "done": 4, "none": 0 },
+  "taskColors": {
+    "todo": "#f0a160",
+    "doing": "#6fb7ee",
+    "done": "#68c487",
+    "none": "#9da6a1"
+  },
+  "signal": { "kind": "attention", "label": "Revisão disponível" }
+}
+```
 
-- reduzir o diâmetro das mudas para acomodar **quatro círculos na primeira linha**, dentro do espaço atualmente ocupado pelas três mudas;
-- manter cada muda em proporção `1:1`;
-- preservar a caixa de entrada exatamente como está;
-- tratar inicialmente os novos círculos como espaços vazios, preenchidos pelo usuário;
-- manter a adaptação para telas menores, embora a experiência principal seja desenhada para laptop.
+`tasks`, `taskColors` e `signal` são opcionais. As contagens precisam ser números finitos e não negativos. O frontend preserva os dados anteriores quando uma atualização falha.
 
-### Representação e sinais de cada projeto
+### Contrato do Radar
 
-Cada muda deverá:
+O Radar recebe duas listas:
 
-- exibir um PNG original escolhido para representar o projeto;
-- usar uma borda circular como indicador da porcentagem de desenvolvimento;
-- receber futuramente o progresso por um padrão de dados publicado pelo próprio projeto, sem transferir suas demandas internas para o Terrário;
-- permitir pequenos sinais externos e contextuais, como uma carta quando uma nova edição da Voltinha estiver pronta;
-- ocultar esses sinais quando não houver novidade, evitando poluição visual.
+```json
+{
+  "today": [{ "title": "Entregável", "project": "Projeto", "due": "2026-08-17" }],
+  "tomorrow": []
+}
+```
 
-No laptop, o hover poderá revelar ações leves sobre a própria muda. O clique principal deve abrir o link do projeto. Controles complementares podem aparecer em um pequeno popover, sem exigir um modal de navegação. A integração específica com grupos de abas do Chrome não faz parte desta etapa.
+O calendário de reuniões ainda não está conectado. A linha permanece explícita como aguardando integração, sem dados fictícios.
 
-### Cadastro pelo espaço vazio
+## Taxímetro de IA
 
-O botão `+` de uma posição vazia abrirá um único modal para criar ou editar uma muda. O formulário deverá permitir:
+O widget tenta consultar `/api/widget` nas portas locais `3001` e `3000`. Ele mostra a fonte principal, percentual de uso e até três tarefas recentes. Se o serviço estiver desligado, assume um estado desconectado e oferece o link para abri-lo.
 
-- informar o nome do projeto;
-- colar o link principal do projeto no GitHub;
-- enviar o PNG de representação;
-- indicar se o projeto está em desenvolvimento ou concluído;
-- escolher se ele permanece visível no painel ou fica guardado na bandeja de projetos.
+## Dados locais
 
-Ao salvar, o Terrário deverá criar a muda, usar o link como destino principal e adicionar automaticamente o projeto ao menu lateral.
+Nesta fase, ficam no `localStorage` do navegador:
 
-O **estado do projeto** e o **local de exibição** são informações independentes. Assim, um projeto concluído pode continuar no painel, como a Voltinha, enquanto um projeto concluído ou ainda incompleto pode ser guardado para uso futuro.
+- projetos cadastrados e alterações nos registros iniciais;
+- PNGs enviados pelo formulário;
+- bloquinhos de notas;
+- projeto em foco;
+- tempo acumulado por projeto.
 
-### Bandeja de projetos
+Esses dados ainda não sincronizam entre computadores ou navegadores. A futura sincronização poderá usar Cloudflare D1 para registros e textos e R2 para arquivos, sem expor credenciais no frontend.
 
-A terceira linha receberá uma bandeja compacta para projetos guardados. Ela deve representar um arquivo acessível, sem competir visualmente com as mudas ativas. Um projeto guardado poderá ser reaberto, editado ou devolvido ao painel posteriormente.
+Limpar os dados do site no navegador pode remover cadastros, imagens, notas e tempos acumulados. Até existir sincronização, não tratar o armazenamento local como backup definitivo.
 
-### Persistência local
+## Acessibilidade e responsividade
 
-Nesta etapa, não haverá conta, servidor de dados ou sincronização entre dispositivos:
-
-- metadados e preferências dos projetos serão mantidos no `localStorage`;
-- imagens PNG serão armazenadas no `IndexedDB`;
-- os dados pertencerão ao navegador usado no laptop;
-- limpar os dados do navegador poderá apagar os cadastros locais.
-
-Exportação, importação de backup e sincronização poderão ser adicionadas depois sem alterar o fluxo principal do modal.
-
-### Integrações futuras
-
-Um projeto poderá futuramente receber um link do Notion para alimentar sua visualização ou seus sinais de progresso. Essa integração fica fora da primeira implementação e não deve ampliar o modal ou a arquitetura agora.
+- controles possuem nomes acessíveis e foco visível;
+- menu, modal e bloquinho podem ser fechados com `Esc`;
+- ações de hover permanecem visíveis em dispositivos sem hover;
+- o painel prioriza laptops e se reorganiza em uma coluna nas telas menores;
+- animações são reduzidas quando o sistema solicita menos movimento.
 
 ## Arquitetura
 
-O Terrário é uma aplicação estática em HTML, CSS e JavaScript puro, compatível com GitHub Pages.
+O Terrário continua como aplicação estática compatível com GitHub Pages.
 
-- `index.html` — estrutura da home, menu, widgets e visualização de projetos;
-- `garden.css` — sistema visual bento, responsividade, mudas e estados dos widgets;
-- `garden.js` — relógio, Pomodoro, navegação, estágios locais e integração resumida do Taxímetro;
-- `novela.html` — página interna da Novela Vertical, mantida como superfície independente.
+- `index.html` — estrutura do painel, menu, gaveta de notas e formulário;
+- `garden.css` — layout, estados visuais e responsividade;
+- `garden.js` — cadastro, persistência local, foco, Pomodoro e integrações;
+- `novela.html` — aplicação Novelinha preservada como superfície independente;
+- `tests/terrario.test.mjs` — verificações estruturais da página estática.
+
+Não existem segredos do Notion no repositório. Credenciais e consultas privadas permanecem no Cloudflare Worker.
+
+## Validação e publicação
+
+Antes de publicar uma alteração:
+
+```bash
+node --check garden.js
+node --test tests/terrario.test.mjs
+```
+
+O teste confirma a composição principal, a existência dos elementos usados pelo JavaScript, as rotas das integrações e as chaves de persistência. A publicação continua sendo feita pelo GitHub Pages a partir do repositório canônico; mudanças devem ser revisadas em uma branch antes de chegar à página principal.

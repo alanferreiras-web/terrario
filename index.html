@@ -1,176 +1,129 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="theme-color" content="#c2cbe1" />
-  <meta name="description" content="Terrário — projetos em desenvolvimento e ferramentas de trabalho em um só lugar." />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#cbd5ed">
+  <meta name="description" content="Terrário — projetos e ferramentas de trabalho em um painel único.">
   <title>Terrário</title>
-  <link rel="stylesheet" href="garden.css?v=20260810-6" />
+  <link rel="stylesheet" href="garden.css?v=20260817-1">
 </head>
 <body>
-  <main class="dashboard" aria-labelledby="pageTitle">
-    <header class="masthead">
-      <div class="brand-cluster">
-        <button class="menu-button" id="openMenu" type="button" aria-label="Abrir menu de mudas" aria-expanded="false">
-          <span></span><span></span><span></span>
-        </button>
-        <h1 id="pageTitle">Terrário</h1>
+  <main class="terrario-shell" id="terrarioShell" aria-labelledby="pageTitle">
+    <div class="landscape" aria-hidden="true"></div>
+
+    <header class="site-header">
+      <div class="brand-group">
+        <button class="menu-button" id="openMenu" type="button" aria-label="Abrir menu lateral" aria-expanded="false"><span aria-hidden="true">☰</span></button>
+        <h1 class="brand" id="pageTitle">Terrário</h1>
+        <span class="prototype-badge">integrações controladas</span>
       </div>
-      <div class="datetime" aria-label="Data e hora locais">
-        <strong class="clock-pill" id="clock">--:--</strong>
-        <span class="today" id="today"></span>
+      <div class="date-time" aria-label="Data e hora locais">
+        <button class="status-pill global-refresh is-idle" id="projectRefresh" type="button" aria-label="Atualizar informações dos projetos" title="Atualizar informações dos projetos e do Notion">
+          <span class="refresh-icon" aria-hidden="true">↻</span><span id="projectRefreshLabel" aria-live="polite">Atualizar dados</span>
+        </button>
+        <strong class="time-pill" id="clock">--:--</strong>
+        <span class="date-pill" id="today">carregando</span>
       </div>
     </header>
 
-    <section class="bento-board" aria-label="Projetos e ferramentas">
-      <button class="muda muda--novela" type="button" data-project="novela" data-url="novela.html" data-stage="1" aria-label="Abrir Novela Vertical, muda em estágio inicial">
-        <span class="muda-visual" aria-hidden="true">
-          <span class="plant plant--novela"><i></i><i></i><i></i><i></i><i></i></span>
-        </span>
-        <span class="muda-copy">
-          <strong>Novela Vertical</strong>
-          <small>estágio 1 · germinando</small>
-        </span>
-      </button>
+    <section class="dashboard-grid" aria-label="Projetos e ferramentas">
+      <section class="work-time-zone" aria-label="Trabalho e tempo">
+        <section class="focus-card glass-card" aria-label="Trabalhando agora">
+          <div class="widget-topline dark-copy"><span>Trabalhando agora</span><span class="status-pill" id="focusStatus">livre</span></div>
+          <div id="focusContent"></div>
+        </section>
 
-      <button class="muda muda--voltinha" type="button" data-project="voltinha" data-url="https://alanferreiras-web.github.io/voltinha/" data-stage="2" aria-label="Abrir Voltinha, muda em crescimento">
-        <span class="muda-visual" aria-hidden="true">
-          <span class="plant plant--voltinha"><i></i><i></i><i></i><i></i><i></i></span>
-        </span>
-        <span class="muda-copy">
-          <strong>Voltinha</strong>
-          <small>estágio 2 · crescendo</small>
-        </span>
-      </button>
-
-      <a class="muda muda--banca" href="https://alanferreiras-web.github.io/bancafeiras/" target="_blank" rel="noopener" data-stage="3" aria-label="Abrir Banca em nova aba, muda florescendo">
-        <span class="muda-visual" aria-hidden="true">
-          <span class="plant plant--banca"><i></i><i></i><i></i><i></i><i></i></span>
-        </span>
-        <span class="muda-copy">
-          <strong>Banca <span aria-hidden="true">↗</span></strong>
-          <small>estágio 3 · florescendo</small>
-        </span>
-      </a>
-
-      <div class="side-stack">
-        <article class="widget email-widget" aria-labelledby="emailTitle">
-          <div class="widget-head">
-            <span class="widget-kicker">caixa de entrada</span>
-            <span class="status-dot" aria-hidden="true"></span>
+        <section class="pomodoro-card glass-card" id="pomodoro" tabindex="-1" aria-label="Tempo de trabalho">
+          <div class="widget-topline"><span>Tempo de trabalho</span><span class="status-pill" id="pomodoroState" aria-live="polite">pronto</span></div>
+          <div class="pomodoro-label">Pomodoro <small id="pomodoroProject">· sem projeto</small></div>
+          <div class="pomodoro-time-row">
+            <div class="pomodoro-time" id="timer" aria-live="polite">25:00</div>
+            <button class="pomodoro-play" id="timerToggle" type="button" aria-label="Iniciar Pomodoro"><span aria-hidden="true">▶</span></button>
           </div>
-          <div class="email-message">
-            <span class="email-icon" aria-hidden="true">@</span>
-            <div>
-              <h2 id="emailTitle">E-mails importantes</h2>
-              <p>Integração ainda não conectada</p>
+          <div class="progress-track" aria-hidden="true"><span id="timerProgress"></span></div>
+          <div class="pomodoro-controls">
+            <div class="duration-buttons" aria-label="Duração do Pomodoro">
+              <button type="button" data-minutes="15">15</button><button class="is-selected" type="button" data-minutes="25">25</button><button type="button" data-minutes="50">50</button>
             </div>
+            <button class="text-button" id="timerReset" type="button">reiniciar</button>
           </div>
-          <span class="integration-label">Gmail · em breve</span>
-        </article>
-      </div>
+        </section>
+      </section>
 
-      <article class="widget pomodoro" aria-labelledby="pomodoroTitle">
-        <div class="widget-head">
-          <span class="widget-kicker">foco rápido</span>
-          <span class="pomodoro-state" id="pomodoroState" aria-live="polite">pronto</span>
-        </div>
-        <div class="timer-row">
-          <div>
-            <h2 id="pomodoroTitle">Pomodoro</h2>
-            <p class="timer" id="timer" aria-live="polite">25:00</p>
-          </div>
-          <button class="timer-toggle" id="timerToggle" type="button" aria-label="Iniciar Pomodoro">▶</button>
-        </div>
-        <div class="timer-progress" aria-hidden="true"><span id="timerProgress"></span></div>
-        <div class="timer-controls" aria-label="Duração do Pomodoro">
-          <button type="button" data-minutes="15">15</button>
-          <button class="active" type="button" data-minutes="25">25</button>
-          <button type="button" data-minutes="50">50</button>
-          <button class="timer-reset" id="timerReset" type="button">reiniciar</button>
-        </div>
-      </article>
+      <section class="projects-board" aria-label="Mudas e aplicações">
+        <div class="section-heading"><span>Mudas e aplicações</span><small id="panelCount">0 no painel</small></div>
+        <div class="projects-grid" id="projectsGrid"></div>
+      </section>
 
-      <article class="widget taxi-widget" aria-labelledby="taxiTitle">
-        <div class="taxi-main">
-          <div class="widget-head">
-            <span class="widget-kicker">visão de uso</span>
-            <span class="integration-label" id="taxiStatus" aria-live="polite">conectando…</span>
+      <aside class="right-rail" aria-label="Informações do dia">
+        <section class="taximeter-card glass-card is-loading" id="taximeter" tabindex="-1" aria-label="Taxímetro de IA">
+          <div class="widget-topline dark-copy"><span>Visão de uso</span><button class="status-pill refresh-pill" id="taxiRefresh" type="button">conectando…</button></div>
+          <div class="taximeter-summary">
+            <div><div class="taximeter-title">Taxímetro de IA</div><div class="muted-copy" id="taxiSummary">Procurando o serviço local</div><strong id="taxiStatus" aria-live="polite">—</strong></div>
+            <div class="usage-donut" id="taxiGauge" role="img" aria-label="0 por cento de uso" style="--usage:0%"><span id="taxiValue">—</span></div>
           </div>
-          <div class="taxi-copy">
-            <div>
-              <h2 id="taxiTitle">Taxímetro de IA</h2>
-              <p id="taxiSummary">Procurando o serviço local do Taxímetro.</p>
-            </div>
-          </div>
-          <div class="meter" role="progressbar" aria-label="Uso da janela atual" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
-            <span id="taxiMeter"></span>
-          </div>
-          <div class="taxi-tasks" id="taxiTasks" aria-label="Tarefas recentes" hidden></div>
-          <div class="taxi-footer">
-            <div class="taxi-sources" id="taxiSources"></div>
-            <button class="taxi-refresh" id="taxiRefresh" type="button">atualizar</button>
-          </div>
-        </div>
-        <div class="taxi-gauge" id="taxiGauge" style="--usage:0" aria-hidden="true">
-          <div><strong id="taxiValue">—</strong><small>uso</small></div>
-        </div>
-      </article>
+          <div class="progress-track light-track" aria-hidden="true"><span id="taxiMeter"></span></div>
+          <div class="recent-tasks" id="taxiTasks" aria-label="Tarefas recentes"></div>
+          <div class="taximeter-footer"><div id="taxiSources"></div><a class="taximeter-offline-link" id="taxiOpen" href="http://127.0.0.1:3001" target="_blank" rel="noopener noreferrer">abrir Taxímetro ↗</a></div>
+        </section>
 
-      <button class="muda muda-slot muda-slot--one" type="button" aria-label="Espaço livre para uma nova muda" disabled>
-        <span aria-hidden="true">+</span><small>próxima muda</small>
-      </button>
-      <button class="muda muda-slot muda-slot--two" type="button" aria-label="Espaço livre para uma nova muda" disabled>
-        <span aria-hidden="true">+</span><small>próxima muda</small>
-      </button>
-      <button class="muda muda-slot muda-slot--three" type="button" aria-label="Espaço livre para uma nova muda" disabled>
-        <span aria-hidden="true">+</span><small>próxima muda</small>
-      </button>
+        <section class="radar-card glass-card" id="radar" tabindex="-1" aria-label="Radar de hoje">
+          <div class="widget-topline dark-copy"><span>Radar de hoje</span><span class="status-pill" id="radarStatus">atualizando…</span></div>
+          <div class="radar-list">
+            <div class="radar-row"><strong>Reuniões</strong><span>aguardando calendário</span></div>
+            <div class="radar-row"><strong>Hoje</strong><span id="radarToday">carregando entregáveis</span></div>
+            <div class="radar-row"><strong>Amanhã</strong><span id="radarTomorrow">carregando entregáveis</span></div>
+          </div>
+        </section>
+
+        <section class="notice-board glass-card" aria-label="Quadro de avisos">
+          <div class="widget-topline dark-copy"><span>Quadro de avisos</span><span class="status-pill">2 fontes</span></div>
+          <div class="notice-row" id="inbox" tabindex="-1"><span class="attention-icon" aria-hidden="true">✉</span><span><strong>Caixa de entrada</strong><small>aguardando integração de e-mail</small></span></div>
+          <div class="notice-row" id="routines" tabindex="-1"><span class="attention-icon" aria-hidden="true">✓</span><span><strong>Rotinas</strong><small>aguardando base de pendências</small></span></div>
+        </section>
+      </aside>
     </section>
   </main>
 
-  <div class="menu-backdrop" id="menuBackdrop"></div>
-  <aside class="project-menu" id="projectMenu" aria-hidden="true" aria-label="Todas as mudas">
-    <header class="project-menu-head">
-      <div><small>Terrário</small><strong>Todas as mudas</strong></div>
-      <button id="closeMenu" type="button" aria-label="Fechar menu">×</button>
-    </header>
-    <nav class="project-menu-list" aria-label="Projetos">
-      <button class="menu-project" type="button" data-project="novela" data-url="novela.html" data-title="Novela Vertical">
-        <span class="menu-swatch menu-swatch--novela" aria-hidden="true"></span>
-        <span><strong>Novela Vertical</strong><small>germinando</small></span>
-      </button>
-      <button class="menu-project" type="button" data-project="voltinha" data-url="https://alanferreiras-web.github.io/voltinha/" data-title="Voltinha">
-        <span class="menu-swatch menu-swatch--voltinha" aria-hidden="true"></span>
-        <span><strong>Voltinha</strong><small>crescendo</small></span>
-      </button>
-      <a class="menu-project" href="https://alanferreiras-web.github.io/bancafeiras/" target="_blank" rel="noopener">
-        <span class="menu-swatch menu-swatch--banca" aria-hidden="true"></span>
-        <span><strong>Banca ↗</strong><small>florescendo</small></span>
-      </a>
+  <div class="drawer-backdrop" id="menuBackdrop"></div>
+  <aside class="side-drawer" id="projectMenu" aria-hidden="true" aria-label="Projetos e aplicações">
+    <div class="drawer-header"><div><small>Terrário</small><strong>Projetos e aplicações</strong></div><button class="icon-button" id="closeMenu" type="button" aria-label="Fechar menu">×</button></div>
+    <div class="drawer-section-title first-section">Projetos</div>
+    <nav class="drawer-list" id="projectMenuList" aria-label="Projetos"></nav>
+    <div class="drawer-section-title">Aplicações</div>
+    <nav class="drawer-list" id="applicationMenuList" aria-label="Aplicações"></nav>
+    <button class="drawer-add" id="createProject" type="button">+ Cadastrar muda</button>
+    <div class="drawer-section-title">Ferramentas</div>
+    <nav class="drawer-tool-list" aria-label="Ferramentas">
+      <button class="drawer-tool" type="button" data-tool-target="pomodoro"><span class="drawer-tool-icon">25</span><span><strong>Pomodoro</strong><small>foco e tempo de trabalho</small></span><span class="tool-state connected"></span></button>
+      <a class="drawer-tool" href="http://127.0.0.1:3001" target="_blank" rel="noopener noreferrer"><span class="drawer-tool-icon">IA</span><span><strong>Taxímetro de IA</strong><small>uso e tarefas recentes</small></span><span class="tool-state runtime"></span></a>
+      <button class="drawer-tool" type="button" data-tool-target="inbox"><span class="drawer-tool-icon">✉</span><span><strong>Caixa de entrada</strong><small>integração preparada</small></span><span class="tool-state planned"></span></button>
+      <button class="drawer-tool" type="button" data-tool-target="routines"><span class="drawer-tool-icon">✓</span><span><strong>Rotinas</strong><small>integração preparada</small></span><span class="tool-state planned"></span></button>
+      <button class="drawer-tool" type="button" data-tool-target="radar"><span class="drawer-tool-icon">◉</span><span><strong>Radar de hoje</strong><small>Notion conectado</small></span><span class="tool-state connected"></span></button>
     </nav>
-    <div class="menu-section-label">Ferramentas</div>
-    <nav class="project-menu-list" aria-label="Ferramentas">
-      <a class="menu-tool" href="http://127.0.0.1:3000" target="_blank" rel="noopener">
-        <span class="menu-tool-icon" aria-hidden="true">IA</span>
-        <span><strong>Taxímetro de IA ↗</strong><small>uso e atividade dos agentes</small></span>
-      </a>
-    </nav>
-    <p class="project-menu-foot">3 mudas ativas · espaço para mais 3</p>
   </aside>
 
-  <section class="project-view" id="projectView" aria-hidden="true" aria-label="Projeto aberto">
-    <header class="project-bar">
-      <button id="closeProject" type="button" aria-label="Voltar ao Terrário">←</button>
-      <div>
-        <small>Terrário</small>
-        <strong id="projectViewTitle">Projeto</strong>
-      </div>
-    </header>
-    <iframe id="projectFrame" title="Projeto" loading="lazy"></iframe>
-  </section>
+  <aside class="note-drawer" id="noteDrawer" hidden aria-label="Bloquinho de notas">
+    <div class="note-header"><span><small>Bloquinho de notas</small><strong id="noteProjectName">Projeto</strong></span><button class="icon-button" id="closeNotes" type="button" aria-label="Fechar Bloquinho de notas">×</button></div>
+    <label class="sr-only" for="projectNote">Bloquinho de notas</label>
+    <textarea id="projectNote" placeholder="Escreva uma lembrança rápida…"></textarea>
+  </aside>
 
-  <script src="garden.js?v=20260810-6"></script>
+  <div class="modal-backdrop" id="projectModalBackdrop" hidden>
+    <form class="project-modal glass-card" id="projectForm" role="dialog" aria-modal="true" aria-label="Cadastrar ou editar muda">
+      <div class="modal-close-row"><button class="icon-button" type="button" data-action="close-modal" aria-label="Fechar">×</button></div>
+      <div class="image-preview-wrap"><div class="image-preview" id="imagePreview" aria-label="Prévia circular do PNG"><span>PNG</span></div><label class="image-upload" data-tooltip="Trocar PNG"><span aria-hidden="true">▧+</span><span class="sr-only">Selecionar PNG</span><input id="projectImage" type="file" accept="image/png"></label></div>
+      <input class="identity-input" id="projectName" name="name" type="text" placeholder="Nome da muda" aria-label="Nome da muda" required>
+      <label class="field-label"><span>URL</span><input id="projectUrl" name="url" type="url" placeholder="https://…" required></label>
+      <fieldset class="choice-field"><legend>Tipo</legend><div class="segmented-control two-options"><label><input type="radio" name="kind" value="project" checked><span>Projeto</span></label><label><input type="radio" name="kind" value="application"><span>Aplicação</span></label></div></fieldset>
+      <fieldset class="choice-field" id="projectPhaseField"><legend>Fase</legend><div class="segmented-control two-options"><label><input type="radio" name="phase" value="development" checked><span>Em desenvolvimento</span></label><label><input type="radio" name="phase" value="completed"><span>Concluído</span></label></div></fieldset>
+      <fieldset class="choice-field"><legend>Exibição</legend><div class="segmented-control two-options"><label><input type="radio" name="location" value="panel" checked><span>Painel + menu</span></label><label><input type="radio" name="location" value="menu"><span>Somente menu</span></label></div></fieldset>
+      <label class="field-label"><span>Notion <em>(opcional)</em></span><input id="projectNotion" name="notionUrl" type="url" placeholder="https://notion.so/…"></label>
+      <div class="modal-actions"><button class="secondary-button" type="button" data-action="close-modal">Cancelar</button><button class="primary-button" id="projectSubmit" type="submit">Cadastrar muda</button></div>
+    </form>
+  </div>
+
+  <script src="garden.js?v=20260817-1"></script>
 </body>
 </html>
