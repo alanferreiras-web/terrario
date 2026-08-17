@@ -5,13 +5,15 @@
     projects: 'terrario-projects-v2',
     notes: 'terrario-prototype-notes',
     activeProject: 'terrario-active-project',
-    timeTotals: 'terrario-time-totals'
+    timeTotals: 'terrario-time-totals',
+    menuOrder: 'terrario-menu-order'
   };
 
   const RADAR_ENDPOINT = 'https://terrario-api.alanferreiras.workers.dev/radar';
   const TAXIMETER_ENDPOINTS = ['http://127.0.0.1:3001', 'http://127.0.0.1:3000'];
   const TASK_COLORS = { done: '#68c487', doing: '#6fb7ee', todo: '#f0a160', none: '#9da6a1' };
   const SIGNAL_ICONS = { mail: '💌', attention: '⚠️', update: '✨', deadline: '⏰' };
+  const PROJECT_COLORS = ['#6f9fc2', '#c77d69', '#7b9b72', '#b48ca7', '#c19a5b', '#6d8f91', '#8a82b5', '#9a765f'];
 
   const INITIAL_PROJECTS = [
     {
@@ -63,10 +65,10 @@
     projectRefresh: document.getElementById('projectRefresh'),
     projectRefreshLabel: document.getElementById('projectRefreshLabel'),
     projectsGrid: document.getElementById('projectsGrid'),
-    panelCount: document.getElementById('panelCount'),
+    nowCard: document.getElementById('nowCard'),
+    nowTopline: document.getElementById('nowTopline'),
     focusContent: document.getElementById('focusContent'),
     focusStatus: document.getElementById('focusStatus'),
-    pomodoroProject: document.getElementById('pomodoroProject'),
     openMenu: document.getElementById('openMenu'),
     closeMenu: document.getElementById('closeMenu'),
     menuBackdrop: document.getElementById('menuBackdrop'),
@@ -95,11 +97,19 @@
   let projects = loadProjects();
   let notes = readJson(STORAGE.notes, {});
   let timeTotals = readJson(STORAGE.timeTotals, {});
+  let menuOrder = readJson(STORAGE.menuOrder, { project: [], application: [] });
   let activeProjectId = localStorage.getItem(STORAGE.activeProject) || null;
   let noteProjectId = null;
   let editingId = null;
   let draftImage = '';
   let projectSync = {};
+  let draggedProjectId = null;
+  let projectTimerRunning = false;
+  let projectTimerProjectId = null;
+  let projectTimerLastTick = 0;
+  if (!Array.isArray(menuOrder.project) || !Array.isArray(menuOrder.application)) {
+    menuOrder = { project: [], application: [] };
+  }
 
   function readJson(key, fallback) {
     try {
@@ -149,6 +159,11 @@
     return name.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0].toUpperCase()).join('') || 'PNG';
   }
 
+  function projectColor(id) {
+    const hash = [...id].reduce((total, character) => ((total * 31) + character.charCodeAt(0)) >>> 0, 7);
+    return PROJECT_COLORS[hash % PROJECT_COLORS.length];
+  }
+
   function safeTasks(tasks) {
     if (!tasks) return null;
     const values = ['todo', 'doing', 'done', 'none'].map((key) => Number(tasks[key]));
@@ -159,6 +174,19 @@
   function taskTotal(tasks) {
     const safe = safeTasks(tasks);
     return safe ? safe.todo + safe.doing + safe.done + safe.none : null;
+  }
+
+  function projectTaskHighlights(project) {
+    if (Array.isArray(project.recentTasks) && project.recentTasks.length) {
+      return project.recentTasks.slice(0, 3).map((task) => ({ title: task.title, meta: task.status || '' }));
+    }
+    const tasks = safeTasks(project.tasks);
+    if (!tasks) return [];
+    return [
+      { title: 'Em andamento', meta: String(tasks.doing) },
+      { title: 'A fazer', meta: String(tasks.todo) },
+      { title: 'Concluídas', meta: String(tasks.done) }
+    ].filter((task) => Number(task.meta) > 0);
   }
 
   function developmentGradient(tasks, colors = {}) {
@@ -185,16 +213,16 @@
   }
 
   function projectState(project) {
-    if (project.kind === 'application') return project.signal?.label || 'Aplicação';
-    if (project.phase === 'completed') return 'Projeto concluído';
+    if (project.kind === 'application') return project.signal?.label || '';
+    if (project.phase === 'completed') return '';
     const sync = projectSync[project.id]?.status;
     const total = taskTotal(project.tasks);
     const summary = total === null ? null : `${total} ${total === 1 ? 'tarefa' : 'tarefas'}`;
-    if (sync === 'loading') return 'atualizando tarefas…';
-    if (sync === 'error') return summary ? `${summary} · dados anteriores` : 'erro ao atualizar';
-    if (sync === 'empty') return 'sem dados do Notion';
-    if (!project.integrationUrl && project.notionUrl) return 'aguardando conexão com Notion';
-    return summary ? `${summary} · em desenvolvimento` : 'sem dados de tarefas';
+    if (sync === 'loading') return 'atualizando…';
+    if (sync === 'error') return 'problema de integração';
+    if (sync === 'empty') return '';
+    if (!project.integrationUrl && project.notionUrl) return '';
+    return summary || '';
   }
 
   function projectCardHtml(project, { compact = false, showFocus = true } = {}) {
@@ -226,7 +254,7 @@
           <button class="icon-button" type="button" data-action="edit" data-project-id="${escapeHtml(project.id)}" data-tooltip="Editar" aria-label="Editar ${escapeHtml(project.name)}"><span aria-hidden="true">✎</span></button>
         </div>
       </div>
-      <div class="project-name">${escapeHtml(project.name)}</div><div class="project-state">${escapeHtml(projectState(project))}</div>
+      <div class="project-name">${escapeHtml(project.name)}</div>${projectState(project) ? `<div class="project-state">${escapeHtml(projectState(project))}</div>` : ''}
     </article>`;
   }
 
@@ -239,29 +267,62 @@
     const active = activeProject();
     const visible = projects.filter((project) => project.location === 'panel' && project.id !== active?.id);
     elements.projectsGrid.innerHTML = visible.map((project) => projectCardHtml(project)).join('');
-    elements.panelCount.textContent = `${visible.length} no painel`;
+    elements.nowCard.classList.toggle('has-project', Boolean(active));
+    elements.nowTopline.classList.toggle('dark-copy', !active);
+    elements.nowCard.style.setProperty('--now-color', active ? projectColor(active.id) : 'transparent');
+    elements.focusStatus.textContent = projectTimerRunning ? 'contando' : active ? 'pausado' : 'livre';
+    if (active) {
+      const image = active.image ? `<img src="${escapeHtml(active.image)}" alt="">` : escapeHtml(initials(active.name));
+      const notion = active.notionUrl
+        ? `<button type="button" data-action="notion" data-project-id="${escapeHtml(active.id)}">Notion ↗</button>` : '';
+      const highlights = projectTaskHighlights(active);
+      const tasks = highlights.length
+        ? highlights.map((task) => `<div class="now-task"><span>${escapeHtml(task.title)}</span><strong>${escapeHtml(task.meta)}</strong></div>`).join('')
+        : '<div class="now-task is-empty">Tarefas recentes aparecerão aqui.</div>';
+      elements.focusContent.innerHTML = `<div class="now-content">
+        <div class="now-identity"><span class="now-avatar" aria-hidden="true">${image}</span><strong>${escapeHtml(active.name)}</strong></div>
+        <div class="now-time-row"><div><small>Tempo do projeto</small><strong>${formatDuration(timeTotals[active.id])}</strong></div>
+          <button class="now-timer-toggle" type="button" data-action="project-timer" aria-label="${projectTimerRunning ? 'Pausar' : 'Iniciar'} tempo do projeto"><span aria-hidden="true">${projectTimerRunning ? 'Ⅱ' : '▶'}</span></button></div>
+        <div class="now-actions" aria-label="Acessos rápidos de ${escapeHtml(active.name)}">
+          <button type="button" data-action="open" data-project-id="${escapeHtml(active.id)}">abrir ↗</button>${notion}
+          <button type="button" data-action="notes" data-project-id="${escapeHtml(active.id)}">notas</button>
+          <button type="button" data-action="clear-focus">encerrar</button>
+        </div>
+        <div class="now-task-list" aria-label="Tarefas recentes">${tasks}</div>
+      </div>`;
+    } else {
+      elements.focusContent.innerHTML = '<div class="focus-empty"><span aria-hidden="true">▶</span><strong>Nenhum projeto em foco</strong><small>Clique no play de uma muda para começar.</small></div>';
+    }
 
-    elements.focusStatus.textContent = active ? 'em foco' : 'livre';
-    elements.pomodoroProject.textContent = active ? `· ${active.name}` : '· sem projeto';
-    elements.focusContent.innerHTML = active
-      ? `<div class="focus-content">${projectCardHtml(active, { compact: true, showFocus: false })}<div class="focus-time-summary"><small>Tempo acumulado</small><strong>${formatDuration(timeTotals[active.id])}</strong><button class="text-button dark-text-button" type="button" data-action="clear-focus">encerrar foco</button></div></div>`
-      : '<div class="focus-empty"><span aria-hidden="true">▶</span><strong>Nenhum projeto em foco</strong><small>Clique no play de uma muda para começar.</small></div>';
-
-    const orderedProjects = projects.filter((project) => project.kind === 'project')
-      .sort((a, b) => (a.phase === b.phase ? a.name.localeCompare(b.name, 'pt-BR') : a.phase === 'development' ? -1 : 1));
-    const applications = projects.filter((project) => project.kind === 'application').sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
+    const orderedProjects = orderMenuGroup('project');
+    const applications = orderMenuGroup('application');
     elements.projectMenuList.innerHTML = orderedProjects.map(drawerProjectHtml).join('');
     elements.applicationMenuList.innerHTML = applications.map(drawerProjectHtml).join('');
   }
 
+  function orderMenuGroup(kind) {
+    const order = Array.isArray(menuOrder[kind]) ? menuOrder[kind] : [];
+    return projects.filter((project) => project.kind === kind).sort((first, second) => {
+      const firstIndex = order.indexOf(first.id);
+      const secondIndex = order.indexOf(second.id);
+      if (firstIndex >= 0 || secondIndex >= 0) {
+        if (firstIndex < 0) return 1;
+        if (secondIndex < 0) return -1;
+        return firstIndex - secondIndex;
+      }
+      if (kind === 'project' && first.phase !== second.phase) return first.phase === 'development' ? -1 : 1;
+      return first.name.localeCompare(second.name, 'pt-BR');
+    });
+  }
+
   function drawerProjectHtml(project) {
-    const visual = project.kind === 'application' ? 'ready' : project.phase;
     const image = project.image ? `<img src="${escapeHtml(project.image)}" alt="">` : escapeHtml(initials(project.name));
-    const label = project.kind === 'application' ? 'Aplicação' : project.phase === 'completed' ? 'Concluído' : 'Em desenvolvimento';
     const focus = project.kind === 'project'
       ? `<button class="drawer-focus" type="button" data-action="focus" data-project-id="${escapeHtml(project.id)}" data-tooltip="Trabalhar agora" aria-label="Trabalhar agora em ${escapeHtml(project.name)}">▶</button>` : '';
-    return `<div class="drawer-project"><span class="drawer-thumbnail ${visual}" aria-hidden="true">${image}</span>
-      <button class="drawer-link" type="button" data-action="open" data-project-id="${escapeHtml(project.id)}"><span>${escapeHtml(project.name)}</span><small>${label}${project.location === 'menu' ? ' · somente menu' : ''}</small></button>
+    return `<div class="drawer-project" draggable="true" data-drag-id="${escapeHtml(project.id)}" data-kind="${project.kind}">
+      <span class="drawer-drag" aria-hidden="true">⋮⋮</span>
+      <span class="drawer-thumbnail" style="background:${projectColor(project.id)}" aria-hidden="true">${image}</span>
+      <button class="drawer-link" type="button" data-action="open" data-project-id="${escapeHtml(project.id)}"><span>${escapeHtml(project.name)}</span></button>
       ${focus}<button class="drawer-edit" type="button" data-action="edit" data-project-id="${escapeHtml(project.id)}" data-tooltip="Editar" aria-label="Editar ${escapeHtml(project.name)}">✎</button></div>`;
   }
 
@@ -278,8 +339,8 @@
   function setFocus(project) {
     if (!project || project.kind !== 'project' || project.id === activeProjectId) return;
     const current = activeProject();
-    if (timerRunning && current && !window.confirm(`Encerrar a sessão de ${current.name} e trabalhar em ${project.name}?`)) return;
-    if (timerRunning && current) resetTimer();
+    if (projectTimerRunning && current && !window.confirm(`Encerrar a sessão de ${current.name} e trabalhar em ${project.name}?`)) return;
+    if (projectTimerRunning && current) pauseProjectTimer();
     activeProjectId = project.id;
     localStorage.setItem(STORAGE.activeProject, activeProjectId);
     renderProjects();
@@ -288,10 +349,49 @@
 
   function clearFocus() {
     const current = activeProject();
-    if (timerRunning && current && !window.confirm(`Encerrar a sessão de ${current.name}?`)) return;
-    if (timerRunning) resetTimer();
+    if (projectTimerRunning && current && !window.confirm(`Encerrar a sessão de ${current.name}?`)) return;
+    if (projectTimerRunning) pauseProjectTimer();
     activeProjectId = null;
     localStorage.removeItem(STORAGE.activeProject);
+    renderProjects();
+  }
+
+  function flushProjectTimer() {
+    if (!projectTimerRunning || !projectTimerProjectId || !projectTimerLastTick) return;
+    const elapsed = Math.floor((Date.now() - projectTimerLastTick) / 1000);
+    if (elapsed <= 0) return;
+    projectTimerLastTick += elapsed * 1000;
+    timeTotals[projectTimerProjectId] = (Number(timeTotals[projectTimerProjectId]) || 0) + elapsed;
+    localStorage.setItem(STORAGE.timeTotals, JSON.stringify(timeTotals));
+    renderProjects();
+  }
+
+  function startProjectTimer() {
+    const current = activeProject();
+    if (!current) return;
+    projectTimerProjectId = current.id;
+    projectTimerLastTick = Date.now();
+    projectTimerRunning = true;
+    renderProjects();
+  }
+
+  function pauseProjectTimer() {
+    flushProjectTimer();
+    projectTimerRunning = false;
+    projectTimerProjectId = null;
+    projectTimerLastTick = 0;
+    renderProjects();
+  }
+
+  function moveMenuProject(kind, targetId) {
+    if (!draggedProjectId || draggedProjectId === targetId) return;
+    const source = getProject(draggedProjectId);
+    if (!source || source.kind !== kind) return;
+    const next = orderMenuGroup(kind).map((project) => project.id).filter((id) => id !== draggedProjectId);
+    const targetIndex = next.indexOf(targetId);
+    next.splice(targetIndex < 0 ? next.length : targetIndex, 0, draggedProjectId);
+    menuOrder = { ...menuOrder, [kind]: next };
+    localStorage.setItem(STORAGE.menuOrder, JSON.stringify(menuOrder));
     renderProjects();
   }
 
@@ -338,6 +438,8 @@
     if (button.dataset.action === 'open') openProject(project);
     if (button.dataset.action === 'focus') setFocus(project);
     if (button.dataset.action === 'notes') openNotes(project);
+    if (button.dataset.action === 'notion' && project?.notionUrl) window.open(project.notionUrl, '_blank', 'noopener,noreferrer');
+    if (button.dataset.action === 'project-timer') projectTimerRunning ? pauseProjectTimer() : startProjectTimer();
     if (button.dataset.action === 'edit') openProjectModal(project);
     if (button.dataset.action === 'clear-focus') clearFocus();
   }
@@ -407,9 +509,9 @@
     if (!project.name || !project.url) return;
     projects = current ? projects.map((item) => item.id === current.id ? project : item) : [...projects, project];
     if (activeProjectId === project.id && project.kind !== 'project') {
+      if (projectTimerRunning) pauseProjectTimer();
       activeProjectId = null;
       localStorage.removeItem(STORAGE.activeProject);
-      resetTimer();
     }
     saveProjects();
     closeProjectModal();
@@ -434,7 +536,6 @@
   let timerMinutes = 25;
   let timerRemaining = timerMinutes * 60;
   let timerDeadline = 0;
-  let timerAccountedRemaining = timerRemaining;
   let timerInterval = null;
   let timerRunning = false;
   let audioContext = null;
@@ -446,20 +547,8 @@
     timerProgress.style.width = `${Math.min(100, Math.max(0, (timerMinutes * 60 - timerRemaining) / (timerMinutes * 60) * 100))}%`;
   }
 
-  function trackElapsed(nextRemaining) {
-    const elapsed = Math.max(0, timerAccountedRemaining - nextRemaining);
-    const active = activeProject();
-    if (elapsed > 0 && active) {
-      timeTotals[active.id] = (Number(timeTotals[active.id]) || 0) + elapsed;
-      localStorage.setItem(STORAGE.timeTotals, JSON.stringify(timeTotals));
-      renderProjects();
-    }
-    timerAccountedRemaining = nextRemaining;
-  }
-
   function tickTimer() {
     const next = Math.max(0, Math.ceil((timerDeadline - Date.now()) / 1000));
-    trackElapsed(next);
     timerRemaining = next;
     renderTimer();
     if (next === 0) completeTimer();
@@ -507,7 +596,6 @@
 
   function startTimer() {
     if (timerRemaining === 0) timerRemaining = timerMinutes * 60;
-    timerAccountedRemaining = timerRemaining;
     timerDeadline = Date.now() + timerRemaining * 1000;
     timerRunning = true;
     pomodoroCard.classList.remove('is-complete');
@@ -521,7 +609,6 @@
 
   function pauseTimer() {
     const next = Math.max(0, Math.ceil((timerDeadline - Date.now()) / 1000));
-    trackElapsed(next);
     timerRemaining = next;
     renderTimer();
     stopTimer();
@@ -532,7 +619,6 @@
     timerInterval = null;
     timerRunning = false;
     timerRemaining = timerMinutes * 60;
-    timerAccountedRemaining = timerRemaining;
     pomodoroCard.classList.remove('is-complete');
     document.title = baseTitle;
     pomodoroState.textContent = 'pronto';
@@ -566,9 +652,10 @@
         ...item,
         ...(snapshot.tasks ? { tasks: snapshot.tasks } : {}),
         ...(snapshot.taskColors ? { taskColors: snapshot.taskColors } : {}),
+        ...(Array.isArray(snapshot.recentTasks) ? { recentTasks: snapshot.recentTasks } : {}),
         ...(Object.prototype.hasOwnProperty.call(snapshot, 'signal') ? { signal: snapshot.signal || undefined } : {})
       } : item);
-      projectSync[project.id] = { status: snapshot.tasks || snapshot.signal ? 'updated' : 'empty' };
+      projectSync[project.id] = { status: snapshot.tasks || snapshot.signal || snapshot.recentTasks ? 'updated' : 'empty' };
       saveProjects();
     } catch {
       projectSync[project.id] = { status: 'error' };
@@ -682,6 +769,20 @@
   elements.focusContent.addEventListener('click', handleProjectAction);
   elements.projectMenuList.addEventListener('click', handleProjectAction);
   elements.applicationMenuList.addEventListener('click', handleProjectAction);
+  [elements.projectMenuList, elements.applicationMenuList].forEach((list) => {
+    list.addEventListener('dragstart', (event) => {
+      const row = event.target.closest('[data-drag-id]');
+      draggedProjectId = row?.dataset.dragId || null;
+      if (event.dataTransfer) event.dataTransfer.effectAllowed = 'move';
+    });
+    list.addEventListener('dragend', () => { draggedProjectId = null; });
+    list.addEventListener('dragover', (event) => event.preventDefault());
+    list.addEventListener('drop', (event) => {
+      event.preventDefault();
+      const row = event.target.closest('[data-drag-id]');
+      if (row) moveMenuProject(row.dataset.kind, row.dataset.dragId);
+    });
+  });
   elements.openMenu.addEventListener('click', showMenu);
   elements.closeMenu.addEventListener('click', () => hideMenu());
   elements.menuBackdrop.addEventListener('click', () => hideMenu());
@@ -724,6 +825,7 @@
   document.addEventListener('visibilitychange', () => {
     if (!document.hidden) {
       if (timerRunning) tickTimer();
+      if (projectTimerRunning) flushProjectTimer();
       refreshAll(false);
     }
   });
@@ -740,6 +842,7 @@
   }
   updateDateTime();
   window.setInterval(updateDateTime, 1000);
+  window.setInterval(() => { if (projectTimerRunning) flushProjectTimer(); }, 250);
   renderProjects();
   renderTimer();
   window.setTimeout(() => refreshAll(false), 0);

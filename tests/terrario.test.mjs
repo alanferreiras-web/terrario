@@ -11,9 +11,9 @@ async function source(name) {
 test('a página contém a composição aprovada', async () => {
   const html = await source('index.html');
   for (const content of [
-    'Trabalhando agora',
-    'Tempo de trabalho',
-    'Mudas e aplicações',
+    'Now',
+    'Pomodoro',
+    'Mudas e jobs',
     'Taxímetro de IA',
     'Radar de hoje',
     'Quadro de avisos',
@@ -45,10 +45,14 @@ test('mantém integrações e estado local necessários', async () => {
   for (const key of [
     'terrario-active-project',
     'terrario-time-totals',
+    'terrario-menu-order',
     'terrario-prototype-notes'
   ]) assert.match(javascript, new RegExp(key));
 
   assert.match(javascript, /searchParams\.set\('fresh', '1'\)/);
   assert.match(javascript, /5 \* 60 \* 1000/);
   assert.match(javascript, /visibilitychange/);
+  assert.match(javascript, /projectTimerRunning/);
+  assert.match(javascript, /draggable="true"/);
+  assert.match(javascript, /moveMenuProject/);
 });

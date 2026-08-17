@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#cbd5ed">
   <meta name="description" content="Terrário — projetos e ferramentas de trabalho em um painel único.">
   <title>Terrário</title>
-  <link rel="stylesheet" href="garden.css?v=20260817-1">
+  <link rel="stylesheet" href="garden.css?v=20260817-2">
 </head>
 <body>
   <main class="terrario-shell" id="terrarioShell" aria-labelledby="pageTitle">
@@ -29,14 +29,13 @@
 
     <section class="dashboard-grid" aria-label="Projetos e ferramentas">
       <section class="work-time-zone" aria-label="Trabalho e tempo">
-        <section class="focus-card glass-card" aria-label="Trabalhando agora">
-          <div class="widget-topline dark-copy"><span>Trabalhando agora</span><span class="status-pill" id="focusStatus">livre</span></div>
+        <section class="focus-card now-card glass-card" id="nowCard" aria-label="Now">
+          <div class="widget-topline dark-copy" id="nowTopline"><span>Now</span><span class="status-pill" id="focusStatus">livre</span></div>
           <div id="focusContent"></div>
         </section>
 
         <section class="pomodoro-card glass-card" id="pomodoro" tabindex="-1" aria-label="Tempo de trabalho">
-          <div class="widget-topline"><span>Tempo de trabalho</span><span class="status-pill" id="pomodoroState" aria-live="polite">pronto</span></div>
-          <div class="pomodoro-label">Pomodoro <small id="pomodoroProject">· sem projeto</small></div>
+          <div class="widget-topline"><span>Pomodoro</span><span class="status-pill" id="pomodoroState" aria-live="polite">pronto</span></div>
           <div class="pomodoro-time-row">
             <div class="pomodoro-time" id="timer" aria-live="polite">25:00</div>
             <button class="pomodoro-play" id="timerToggle" type="button" aria-label="Iniciar Pomodoro"><span aria-hidden="true">▶</span></button>
@@ -51,8 +50,8 @@
         </section>
       </section>
 
-      <section class="projects-board" aria-label="Mudas e aplicações">
-        <div class="section-heading"><span>Mudas e aplicações</span><small id="panelCount">0 no painel</small></div>
+      <section class="projects-board" aria-label="Mudas e jobs">
+        <div class="section-heading"><span>Mudas e jobs</span></div>
         <div class="projects-grid" id="projectsGrid"></div>
       </section>
 
@@ -124,6 +123,6 @@
     </form>
   </div>
 
-  <script src="garden.js?v=20260817-1"></script>
+  <script src="garden.js?v=20260817-2"></script>
 </body>
 </html>

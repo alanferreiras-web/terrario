@@ -325,7 +325,7 @@ div[tabindex="-1"]:focus-visible {
 .project-interaction {
   position: relative;
   width: min(100%, var(--circle-size));
-  min-height: calc(var(--circle-size) + 18px);
+  min-height: calc(var(--circle-size) + 8px);
   margin: 0 auto;
 }
 
@@ -444,7 +444,7 @@ div[tabindex="-1"]:focus-visible {
 .project-actions {
   position: absolute;
   z-index: 12;
-  top: calc(var(--circle-size) - 20px);
+  top: calc(var(--circle-size) - 48px);
   left: 50%;
   display: flex;
   align-items: center;
@@ -471,7 +471,7 @@ div[tabindex="-1"]:focus-visible {
 }
 
 .project-name {
-  margin: 2px auto 1px;
+  margin: -3px auto 1px;
   overflow: hidden;
   color: var(--ink);
   text-overflow: ellipsis;
@@ -481,7 +481,7 @@ div[tabindex="-1"]:focus-visible {
 }
 
 .project-state {
-  min-height: 1.2em;
+  min-height: 0;
   overflow: hidden;
   color: rgba(26, 36, 29, 0.62);
   text-overflow: ellipsis;
@@ -662,6 +662,159 @@ div[tabindex="-1"]:focus-visible {
   min-height: 0;
   display: grid;
   align-content: stretch;
+}
+
+.now-card {
+  transition: background 180ms ease, color 180ms ease;
+}
+
+.now-card.has-project {
+  color: white;
+  background:
+    radial-gradient(circle at 92% 6%, rgba(255, 255, 255, 0.24), transparent 38%),
+    linear-gradient(145deg, color-mix(in srgb, var(--now-color) 82%, #33473c), color-mix(in srgb, var(--now-color) 54%, #23382e));
+}
+
+.now-card.has-project .widget-topline,
+.now-card.has-project .widget-topline .status-pill {
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.now-content {
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(150px, 0.95fr);
+  grid-template-areas:
+    "identity time"
+    "actions actions"
+    "tasks tasks";
+  align-content: space-between;
+  gap: 10px 14px;
+}
+
+.now-identity {
+  grid-area: identity;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.now-identity > strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 1rem;
+}
+
+.now-avatar {
+  flex: 0 0 46px;
+  width: 46px;
+  height: 46px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.42);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  font-size: 0.76rem;
+  font-weight: 800;
+}
+
+.now-avatar img {
+  width: 72%;
+  height: 72%;
+  object-fit: contain;
+}
+
+.now-time-row {
+  grid-area: time;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.now-time-row small,
+.now-time-row strong {
+  display: block;
+  text-align: right;
+}
+
+.now-time-row small {
+  margin-bottom: 3px;
+  color: rgba(255, 255, 255, 0.64);
+  font-size: 0.66rem;
+}
+
+.now-time-row strong {
+  font-size: clamp(1.35rem, 2.2vw, 2rem);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.05em;
+}
+
+.now-timer-toggle {
+  flex: 0 0 44px;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--coral);
+  color: white;
+  cursor: pointer;
+  box-shadow: 0 10px 22px rgba(57, 34, 31, 0.2);
+}
+
+.now-actions {
+  grid-area: actions;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  overflow-x: auto;
+}
+
+.now-actions button {
+  flex: 0 0 auto;
+  padding: 6px 9px;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.13);
+  color: white;
+  cursor: pointer;
+  font-size: 0.68rem;
+}
+
+.now-task-list {
+  grid-area: tasks;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.now-task {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 7px;
+  padding: 7px 8px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.12);
+  font-size: 0.67rem;
+}
+
+.now-task span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.now-task.is-empty {
+  grid-column: 1 / -1;
+  justify-content: flex-start;
+  color: rgba(255, 255, 255, 0.64);
 }
 
 .radar-card {
@@ -1132,7 +1285,7 @@ div[tabindex="-1"]:focus-visible {
 
 .drawer-project {
   display: grid;
-  grid-template-columns: 48px minmax(0, 1fr) auto auto;
+  grid-template-columns: 20px 44px minmax(0, 1fr) auto auto;
   align-items: center;
   gap: 8px;
   padding: 8px;
@@ -1141,9 +1294,20 @@ div[tabindex="-1"]:focus-visible {
   background: rgba(255, 255, 255, 0.48);
 }
 
+.drawer-drag {
+  color: rgba(45, 58, 50, 0.36);
+  cursor: grab;
+  font-size: 0.9rem;
+  letter-spacing: -0.2em;
+}
+
+.drawer-project:active .drawer-drag {
+  cursor: grabbing;
+}
+
 .drawer-thumbnail {
-  width: 48px;
-  height: 48px;
+  width: 44px;
+  height: 44px;
   display: grid;
   place-items: center;
   overflow: hidden;
@@ -1175,6 +1339,14 @@ div[tabindex="-1"]:focus-visible {
   border: 0;
   background: transparent;
   cursor: pointer;
+}
+
+.drawer-focus {
+  grid-column: 4;
+}
+
+.drawer-edit {
+  grid-column: 5;
 }
 
 .drawer-focus,
@@ -1749,6 +1921,24 @@ div[tabindex="-1"]:focus-visible {
 
   .projects-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .now-content {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "identity"
+      "time"
+      "actions"
+      "tasks";
+  }
+
+  .now-time-row {
+    justify-content: space-between;
+  }
+
+  .now-time-row small,
+  .now-time-row strong {
+    text-align: left;
   }
 
   .project-cell:last-child:nth-child(odd) {

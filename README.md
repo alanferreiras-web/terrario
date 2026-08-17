@@ -21,21 +21,22 @@ Ele não reproduz a interface, as regras, os dados ou a documentação interna d
 
 ## Organização da interface
 
-### Trabalho e tempo
+### Now e Pomodoro
 
-`Trabalhando agora` e o Pomodoro ficam lado a lado no topo da área principal.
+`Now` e o Pomodoro ficam lado a lado no topo da área principal, mas são relógios independentes.
 
 - o botão de play exibido no hover de uma muda define o projeto em foco;
-- o projeto selecionado sai temporariamente do grid e ocupa `Trabalhando agora`;
+- o projeto selecionado sai temporariamente do grid e ocupa `Now`;
 - sem seleção, a área mostra `Nenhum projeto em foco`;
-- o Pomodoro funciona com ciclos de 15, 25 ou 50 minutos;
-- com um projeto em foco, o tempo decorrido é acumulado nesse projeto;
-- sem projeto em foco, o Pomodoro continua funcionando, mas o tempo não é atribuído;
+- o contador do `Now` inicia, pausa e acumula o tempo do projeto selecionado;
+- `Now` oferece atalhos para o projeto, Notion e bloquinho, além de um resumo de tarefas;
+- o Pomodoro funciona livremente em ciclos de 15, 25 ou 50 minutos e não altera o tempo dos projetos;
+- os dois relógios podem funcionar separadamente ou ao mesmo tempo;
 - encerrar ou trocar o foco durante uma sessão ativa exige confirmação.
 
 O tempo é contado enquanto a página permanece aberta. O total acumulado é salvo localmente no navegador.
 
-### Mudas e aplicações
+### Mudas e jobs
 
 Projetos e aplicações usam a mesma representação circular e ocupam o mesmo grid.
 
@@ -80,9 +81,11 @@ Cada projeto ou aplicação possui um campo de texto simples para consulta rápi
 
 O menu lateral reúne todos os registros, inclusive os marcados como `Somente menu`, e separa:
 
-- **Projetos:** em desenvolvimento primeiro, concluídos depois;
-- **Aplicações:** ferramentas prontas incorporadas à rotina;
+- **Projetos:** lista de nomes com cores individuais;
+- **Aplicações:** lista de nomes com cores individuais;
 - **Ferramentas:** atalhos para Pomodoro, Taxímetro, Caixa de entrada, Rotinas e Radar.
+
+Os registros podem ser arrastados dentro do próprio grupo para definir uma prioridade manual. A ordem é salva no navegador. O menu não repete fase, tipo ou local de exibição abaixo dos nomes; essas informações pertencem à edição ou aos sinais do painel.
 
 O cadastro e a edição usam o mesmo formulário. Os campos são:
 
@@ -161,11 +164,12 @@ Um endpoint de projeto pode devolver:
     "done": "#68c487",
     "none": "#9da6a1"
   },
-  "signal": { "kind": "attention", "label": "Revisão disponível" }
+  "signal": { "kind": "attention", "label": "Revisão disponível" },
+  "recentTasks": [{ "title": "Revisar material", "status": "Em andamento" }]
 }
 ```
 
-`tasks`, `taskColors` e `signal` são opcionais. As contagens precisam ser números finitos e não negativos. O frontend preserva os dados anteriores quando uma atualização falha.
+`tasks`, `taskColors`, `signal` e `recentTasks` são opcionais. As contagens precisam ser números finitos e não negativos. Enquanto o Worker não enviar nomes de tarefas recentes, o `Now` usa as contagens por status como resumo. O frontend preserva os dados anteriores quando uma atualização falha.
 
 ### Contrato do Radar
 
@@ -192,7 +196,8 @@ Nesta fase, ficam no `localStorage` do navegador:
 - PNGs enviados pelo formulário;
 - bloquinhos de notas;
 - projeto em foco;
-- tempo acumulado por projeto.
+- tempo acumulado por projeto;
+- prioridade dos registros no menu lateral.
 
 Esses dados ainda não sincronizam entre computadores ou navegadores. A futura sincronização poderá usar Cloudflare D1 para registros e textos e R2 para arquivos, sem expor credenciais no frontend.
 
